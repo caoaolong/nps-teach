@@ -4,9 +4,9 @@ project(nps_teach C)
 set(CMAKE_C_STANDARD 23)
 set(NPCAP_DIR ${PROJECT_SOURCE_DIR}/npcap)
 
-include_directories(${NPCAP_DIR}/Include)
+include_directories(${NPCAP_DIR}/Include src/inc)
 link_directories(${NPCAP_DIR}/Lib/x64)
 
-add_executable(nps_teach main.c)
+add_executable(nps_teach src/nps.c src/device.c)
 
-target_link_libraries(nps_teach Packet.lib wpcap.lib)
+target_link_libraries(nps_teach ws2_32 Packet.lib wpcap.lib)
