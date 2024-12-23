@@ -7,6 +7,8 @@ set(NPCAP_DIR ${PROJECT_SOURCE_DIR}/npcap)
 include_directories(${NPCAP_DIR}/Include src/inc)
 link_directories(${NPCAP_DIR}/Lib/x64)
 
-add_executable(nps_teach src/nps.c src/device.c)
+add_executable(nps_teach src/nps.c src/device.c
+        src/prtc/ethii.c
+        src/inc/prtc.h)
 
 target_link_libraries(nps_teach ws2_32 Packet.lib wpcap.lib)
