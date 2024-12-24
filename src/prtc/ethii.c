@@ -7,15 +7,6 @@
 #include <string.h>
 #include <winsock2.h>
 
-char *get_mac_str(const unsigned char *mac) {
-    char *mac_str = malloc(ETH_II_MAC_LEN + 1);
-    memset(mac_str, 0, ETH_II_MAC_LEN + 1);
-    memcpy(mac_str, mac, ETH_II_MAC_LEN);
-    if (mac_str == NULL) return nullptr;
-    sprintf(mac_str, "%02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-    return mac_str;
-}
-
 EthII_Hdr *eth_ii_parse(const unsigned char *data) {
     EthII_Hdr *eth_ii = malloc(sizeof(EthII_Hdr));
     if (eth_ii == NULL)
@@ -27,11 +18,11 @@ EthII_Hdr *eth_ii_parse(const unsigned char *data) {
 
 void eth_ii_print(const EthII_Hdr *eth_ii) {
     if (eth_ii == NULL) return;
-    if (eth_ii->type == 0x800) {
+    if (eth_ii->type == ETH_II_TYPE_IPV4) {
         printf("IPv4");
-    } else if (eth_ii->type == 0x86DD) {
+    } else if (eth_ii->type == ETH_II_TYPE_IPV6) {
         printf("IPv6");
-    } else if (eth_ii->type == 0x806) {
+    } else if (eth_ii->type == ETH_II_TYPE_ARP) {
         printf("ARP");
     } else {
         printf("Unknown");

@@ -69,6 +69,18 @@ void device_handler(unsigned char *user, const struct pcap_pkthdr *header, const
     printf("Timestamp: %ld.%ld seconds\n", header->ts.tv_sec, header->ts.tv_usec);
     printf("Packet length: %d bytes\n", header->len);
 
-    EthII_Hdr *eth_ii = eth_ii_parse(pkt_data);
+    const unsigned char *data = pkt_data;
+    // 以太网帧头
+    EthII_Hdr *eth_ii = eth_ii_parse(data);
     eth_ii_print(eth_ii);
+    data += sizeof(EthII_Hdr);
+    switch (eth_ii->type) {
+        case ETH_II_TYPE_ARP:
+            Arp_Hdr *arp = arp_parse(data);
+            arp_print(arp);
+            break;
+        default:
+            printf("Unknown packet type: %d\n", eth_ii->type);
+        break;
+    }
 }

@@ -1,5 +1,7 @@
 ﻿#include <nps.h>
 
+#define USE_FILTER
+
 int main() {
     pcap_if_t *alldevs = nullptr;
     char errbuf[PCAP_ERRBUF_SIZE];
@@ -16,6 +18,22 @@ int main() {
         pcap_freealldevs(alldevs);
         exit(-1);
     }
+#ifdef USE_FILTER
+    // 设置过滤器
+    struct bpf_program fp;
+    char filter_exp[] = "arp";
+    bpf_u_int32 net = 0;
+    // 编译过滤器
+    if (pcap_compile(handle, &fp, filter_exp, 0, net) == -1) {
+        printf("Couldn't parse filter %s: %s\n", filter_exp, pcap_geterr(handle));
+        return 1;
+    }
+    if (pcap_setfilter(handle, &fp) == -1) {
+        fprintf(stderr, "Couldn't install filter %s: %s\n", filter_exp, pcap_geterr(handle));
+        exit(-1);
+    }
+#endif
+
     // 开始抓包
     pcap_loop(handle, 5, device_handler, nullptr);
 
