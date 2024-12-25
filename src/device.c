@@ -4,6 +4,8 @@
 #include <nps.h>
 #include <prtc.h>
 
+struct in_addr HOST_IP;
+
 void devices_info(pcap_if_t *alldevs) {
     pcap_if_t *device; // 当前设备
     char errbuf[PCAP_ERRBUF_SIZE]; // 错误信息缓冲区
@@ -46,7 +48,7 @@ void devices_info(pcap_if_t *alldevs) {
 }
 
 pcap_if_t *device_find(pcap_if_t *alldevs, const char *name) {
-    pcap_if_t *device; // 当前设备
+    // 当前设备
     char errbuf[PCAP_ERRBUF_SIZE]; // 错误信息缓冲区
     char nbuf[64];
     sprintf(nbuf, "\\Device\\NPF_{%s}", name);
@@ -57,9 +59,20 @@ pcap_if_t *device_find(pcap_if_t *alldevs, const char *name) {
     }
 
     // 遍历设备列表
-    for (device = alldevs; device != NULL; device = device->next) {
-        if (!strcmp(device->name, nbuf))
+    for (pcap_if_t *device = alldevs; device != NULL; device = device->next) {
+        if (!strcmp(device->name, nbuf)) {
+            // 遍历设备地址
+            pcap_addr_t *addr;
+            for (addr = device->addresses; addr != NULL; addr = addr->next) {
+                // 仅获取 IPv4 地址
+                if (addr->addr && addr->addr->sa_family == AF_INET) {
+                    struct sockaddr_in *ip_addr = (struct sockaddr_in *) addr->addr;
+                    char *ip_str = inet_ntoa(ip_addr->sin_addr);
+                    inet_pton(AF_INET, ip_str, &HOST_IP);
+                }
+            }
             return device;
+        }
     }
     return nullptr;
 }

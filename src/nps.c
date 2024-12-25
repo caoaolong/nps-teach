@@ -1,5 +1,7 @@
 ﻿#include <nps.h>
 
+#include "prtc.h"
+
 #define USE_FILTER
 
 int main() {
@@ -35,7 +37,10 @@ int main() {
 #endif
 
     // 开始抓包
-    pcap_loop(handle, 5, device_handler, nullptr);
+    // pcap_loop(handle, 5, device_handler, nullptr);
+
+    // 发送 ARP Request
+    arp_send(handle, nullptr, ARP_GRATUITOUS);
 
     pcap_close(handle);
     pcap_freealldevs(alldevs);

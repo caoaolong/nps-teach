@@ -16,6 +16,13 @@ EthII_Hdr *eth_ii_parse(const unsigned char *data) {
     return eth_ii;
 }
 
+uint8_t *eth_ii_serialize(const EthII_Hdr *eth_ii_hdr) {
+    uint8_t *data = malloc(sizeof(EthII_Hdr));
+    if (data == NULL) return nullptr;
+
+    return data;
+}
+
 void eth_ii_print(const EthII_Hdr *eth_ii) {
     if (eth_ii == NULL) return;
     if (eth_ii->type == ETH_II_TYPE_IPV4) {

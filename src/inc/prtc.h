@@ -5,7 +5,9 @@
 #ifndef PRTC_H
 #define PRTC_H
 
+#include <nps.h>
 #include <hdr.h>
+#include <stdio.h>
 #include <string.h>
 #include <winsock2.h>
 
@@ -18,6 +20,12 @@ static char *get_mac_str(const unsigned char *mac) {
     return mac_str;
 }
 
+static uint8_t *from_mac_str(const char *mac_str) {
+    uint8_t *mac = malloc(ETH_II_MAC_LEN);
+    memcpy(mac, mac_str, ETH_II_MAC_LEN);
+    return mac;
+}
+
 static char *get_ip_str(uint32_t ip) {
     struct in_addr addr;
     addr.s_addr = htonl(ip);
@@ -27,12 +35,33 @@ static char *get_ip_str(uint32_t ip) {
     return ip_str;
 }
 
-EthII_Hdr *eth_ii_parse(const unsigned char *data);
+static uint32_t from_ip_str(char *ip_str) {
+    uint32_t ip = 0;
+    char *ip_inet = strtok(ip_str, ".");
+    while (ip_inet != NULL) {
+        ip = ip * 256 + strtoul(ip_inet, NULL, 16);
+    }
+    return ip;
+}
 
+static int host_mac(uint8_t *mac_val) {
+    const char *mac = getenv("HOST_MAC");
+    for (int i = 0; i < ETH_II_MAC_LEN; i++) {
+        if (sscanf(mac + 3 * i, "%2hhx", &mac_val[i]) != 1) {
+            return -1;
+        }
+    }
+    return 0;
+}
+
+EthII_Hdr *eth_ii_parse(const unsigned char *data);
 void eth_ii_print(const EthII_Hdr *eth_ii);
 
-Arp_Hdr *arp_parse(const unsigned char *data);
 
+#define ARP_GRATUITOUS  1
+#define ARP_REQUEST     2
+Arp_Hdr *arp_parse(const unsigned char *data);
 void arp_print(const Arp_Hdr *arp);
+int arp_send(pcap_t *handle, char *tpa, uint8_t type);
 
 #endif //PRTC_H
