@@ -36,12 +36,13 @@ static char *get_ip_str(uint32_t ip) {
 }
 
 static uint32_t from_ip_str(char *ip_str) {
-    uint32_t ip = 0;
-    char *ip_inet = strtok(ip_str, ".");
-    while (ip_inet != NULL) {
-        ip = ip * 256 + strtoul(ip_inet, NULL, 16);
+    struct in_addr ip_addr; // 存储转换后的IP地址
+    // 使用inet_pton将IP地址字符串转换为网络字节序
+    if (inet_pton(AF_INET, ip_str, &ip_addr) <= 0) {
+        perror("inet_pton failed");
+        return 0;
     }
-    return ip;
+    return ip_addr.s_addr;
 }
 
 static int host_mac(uint8_t *mac_val) {

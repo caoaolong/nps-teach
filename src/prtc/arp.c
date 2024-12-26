@@ -43,7 +43,7 @@ int arp_send(pcap_t *handle, char *tpa, uint8_t type) {
     } else if (type == ARP_REQUEST) {
         pl = sizeof(EthII_Hdr) + sizeof(Arp_Hdr);
         memset(arp_hdr.tha, 0, ETH_II_MAC_LEN);
-        arp_hdr.tpa = htonl(from_ip_str(tpa));
+        arp_hdr.tpa = from_ip_str(tpa);
     }
     uint8_t data[pl];
     memset(data, 0, pl);

@@ -40,7 +40,9 @@ int main() {
     // pcap_loop(handle, 5, device_handler, nullptr);
 
     // 发送 ARP Request
-    arp_send(handle, nullptr, ARP_GRATUITOUS);
+    for (int i = 0; i < 10; i++) {
+        arp_send(handle, "10.110.9.55", ARP_REQUEST);
+    }
 
     pcap_close(handle);
     pcap_freealldevs(alldevs);
