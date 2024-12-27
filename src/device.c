@@ -89,11 +89,15 @@ void device_handler(unsigned char *user, const struct pcap_pkthdr *header, const
     data += sizeof(EthII_Hdr);
     switch (eth_ii->type) {
         case ETH_II_TYPE_ARP:
-            Arp_Hdr *arp = arp_parse(data);
+            const Arp_Hdr *arp = arp_parse(data);
             arp_print(arp);
+            break;
+        case ETH_II_TYPE_IPV4:
+            const Ip_Hdr *ip = ip_parse(data);
+            ip_print(ip);
             break;
         default:
             printf("Unknown packet type: %d\n", eth_ii->type);
-        break;
+            break;
     }
 }

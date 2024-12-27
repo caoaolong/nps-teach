@@ -23,7 +23,7 @@ int main() {
 #ifdef USE_FILTER
     // 设置过滤器
     struct bpf_program fp;
-    char filter_exp[] = "arp";
+    char filter_exp[] = "arp or ip";
     bpf_u_int32 net = 0;
     // 编译过滤器
     if (pcap_compile(handle, &fp, filter_exp, 0, net) == -1) {
@@ -37,12 +37,12 @@ int main() {
 #endif
 
     // 开始抓包
-    // pcap_loop(handle, 5, device_handler, nullptr);
+    pcap_loop(handle, 5, device_handler, nullptr);
 
     // 发送 ARP Request
-    for (int i = 0; i < 10; i++) {
-        arp_send(handle, "10.110.9.55", ARP_REQUEST);
-    }
+    // for (int i = 0; i < 10; i++) {
+    //     arp_send(handle, "10.110.9.55", ARP_REQUEST);
+    // }
 
     pcap_close(handle);
     pcap_freealldevs(alldevs);

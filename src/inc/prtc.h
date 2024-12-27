@@ -65,4 +65,11 @@ Arp_Hdr *arp_parse(const unsigned char *data);
 void arp_print(const Arp_Hdr *arp);
 int arp_send(pcap_t *handle, char *tpa, uint8_t type);
 
+
+#define IPv4_VERSION    4
+#define IPv6_VERSION    6
+#define IP_TOP_TCP      6
+#define IP_TOP_UDP      17
+Ip_Hdr *ip_parse(const unsigned char *data);
+void ip_print(const Ip_Hdr *ip);
 #endif //PRTC_H
