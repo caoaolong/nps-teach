@@ -55,6 +55,29 @@ static int host_mac(uint8_t *mac_val) {
     return 0;
 }
 
+static uint16_t checksum(void *data, int len) {
+    uint32_t sum = 0;
+    uint16_t *ptr = data;
+    // 遍历数据，按16位单元累加
+    while (len > 1) {
+        sum += *ptr++;
+        if (sum > 0xFFFF) {
+            sum = (sum & 0xFFFF) + 1; // 如果有进位，将进位加回
+        }
+        len -= 2;
+    }
+    // 如果长度是奇数，处理最后一个字节
+    if (len == 1) {
+        uint8_t last_byte = *(uint8_t *)ptr;
+        sum += (last_byte << 8); // 高位补齐
+        if (sum > 0xFFFF) {
+            sum = (sum & 0xFFFF) + 1;
+        }
+    }
+    // 取反，返回校验和
+    return ~sum;
+}
+
 EthII_Hdr *eth_ii_parse(const unsigned char *data);
 void eth_ii_print(const EthII_Hdr *eth_ii);
 
@@ -71,5 +94,6 @@ int arp_send(pcap_t *handle, char *tpa, uint8_t type);
 #define IP_TOP_TCP      6
 #define IP_TOP_UDP      17
 Ip_Hdr *ip_parse(const unsigned char *data);
+BOOL ip_checksum(const unsigned char *data, uint16_t checksum);
 void ip_print(const Ip_Hdr *ip);
 #endif //PRTC_H
