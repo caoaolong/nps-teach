@@ -94,6 +94,6 @@ int arp_send(pcap_t *handle, char *tpa, uint8_t type);
 #define IP_TOP_TCP      6
 #define IP_TOP_UDP      17
 Ip_Hdr *ip_parse(const unsigned char *data);
-BOOL ip_checksum(const unsigned char *data, uint16_t checksum);
+BOOL ip_checksum(Ip_Hdr *ip_hdr);
 void ip_print(const Ip_Hdr *ip);
 #endif //PRTC_H
