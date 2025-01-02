@@ -91,9 +91,14 @@ int arp_send(pcap_t *handle, char *tpa, uint8_t type);
 
 #define IPv4_VERSION    4
 #define IPv6_VERSION    6
+#define IP_TOP_ICMP     1
 #define IP_TOP_TCP      6
 #define IP_TOP_UDP      17
 Ip_Hdr *ip_parse(const unsigned char *data);
 BOOL ip_checksum(Ip_Hdr *ip_hdr);
-void ip_print(const Ip_Hdr *ip);
+void ip_print(const Ip_Hdr *ip_hdr);
+
+Icmp_Hdr *icmp_parse(const unsigned char *data, uint16_t len);
+BOOL icmp_checksum(Icmp_Hdr *icmp_hdr, uint16_t len);
+void icmp_print(const Icmp_Hdr *icmp);
 #endif //PRTC_H

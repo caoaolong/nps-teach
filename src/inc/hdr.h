@@ -54,4 +54,11 @@ typedef struct __attribute__((__packed__)) {
     uint32_t src;
     uint32_t dst;
 } Ip_Hdr;
+
+// ICMP Header
+typedef struct __attribute__((__packed__)) {
+    uint8_t type;
+    uint8_t code;
+    uint16_t checksum;
+} Icmp_Hdr;
 #endif //HDR_H

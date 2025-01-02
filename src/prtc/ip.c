@@ -3,6 +3,8 @@
 //
 #include <prtc.h>
 
+Icmp_Hdr *icmp_hdr;
+
 Ip_Hdr *ip_parse(const unsigned char *data) {
     Ip_Hdr *ip_hdr = malloc(sizeof(Ip_Hdr));
     if (ip_hdr == NULL) return nullptr;
@@ -14,12 +16,22 @@ Ip_Hdr *ip_parse(const unsigned char *data) {
     ip_hdr->ff.v = ntohs(ip_hdr->ff.v);
     ip_hdr->src = ntohl(ip_hdr->src);
     ip_hdr->dst = ntohl(ip_hdr->dst);
+
+    // 判断上层协议类型
+    if (ip_hdr->protocol == IP_TOP_ICMP) {
+        uint16_t hl = ip_hdr->ihl * 4;
+        // TODO: 放入协议栈中
+        icmp_hdr = icmp_parse(data + hl, ip_hdr->len - hl);
+    }
+
     return ip_hdr;
 }
 
 BOOL ip_checksum(Ip_Hdr *ip_hdr) {
-    // 计算校验和
     uint16_t recv_checksum = ip_hdr->checksum;
+    // 不进行校验
+    if (recv_checksum == 0) return TRUE;
+    // 计算校验和
     ip_hdr->checksum = 0;
     if (checksum(ip_hdr,  ip_hdr->ihl * 4) == recv_checksum) {
         ip_hdr->checksum = recv_checksum;
@@ -29,14 +41,22 @@ BOOL ip_checksum(Ip_Hdr *ip_hdr) {
     return FALSE;
 }
 
-void ip_print(const Ip_Hdr *ip) {
-    if (ip == NULL) return;
-    printf("\t\t Header: %u bytes, Total: %u bytes\n", ip->ihl * 4, ip->len);
-    printf("\t\t TTL: %u\n", ip->ttl);
-    if (ip->protocol == IP_TOP_TCP) {
+void ip_print(const Ip_Hdr *ip_hdr) {
+    if (ip_hdr == NULL) return;
+    printf("\t\t Header: %u bytes, Total: %u bytes\n", ip_hdr->ihl * 4, ip_hdr->len);
+    printf("\t\t TTL: %u\n", ip_hdr->ttl);
+    if (ip_hdr->protocol == IP_TOP_TCP) {
         printf("\t\t TOP: TCP\n");
-    } else {
+    } else if (ip_hdr->protocol == IP_TOP_UDP) {
         printf("\t\t TOP: UDP\n");
+    } else if (ip_hdr->protocol == IP_TOP_ICMP) {
+        printf("\t\t TOP: ICMP\n");
     }
-    printf("\t\t %s → %s\n", get_ip_str(ip->src), get_ip_str(ip->dst));
+    printf("\t\t %s → %s\n", get_ip_str(ip_hdr->src), get_ip_str(ip_hdr->dst));
+
+    // 判断上层协议类型
+    if (ip_hdr->protocol == IP_TOP_ICMP) {
+        // TODO: 从协议栈中读取并打印
+        icmp_print(icmp_hdr);
+    }
 }

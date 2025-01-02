@@ -10,6 +10,8 @@ link_directories(${NPCAP_DIR}/Lib/x64)
 add_executable(nps_teach src/nps.c src/device.c
         src/prtc/ethii.c
         src/prtc/arp.c
-        src/prtc/ip.c)
+        src/prtc/ip.c
+        src/prtc/icmp.c
+        src/utils/stack.c)
 
 target_link_libraries(nps_teach ws2_32 Packet.lib wpcap.lib)
