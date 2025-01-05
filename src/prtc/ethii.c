@@ -25,9 +25,9 @@ uint8_t *eth_ii_serialize(const EthII_Hdr *eth_ii_hdr) {
 
 void eth_ii_print(const EthII_Hdr *eth_ii) {
     if (eth_ii == NULL) return;
-    if (eth_ii->type == ETH_II_TYPE_IPV4) {
+    if (eth_ii->type == ETH_II_TYPE_IPv4) {
         printf("IPv4");
-    } else if (eth_ii->type == ETH_II_TYPE_IPV6) {
+    } else if (eth_ii->type == ETH_II_TYPE_IPv6) {
         printf("IPv6");
     } else if (eth_ii->type == ETH_II_TYPE_ARP) {
         printf("ARP");

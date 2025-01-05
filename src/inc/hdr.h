@@ -8,9 +8,9 @@
 #include <stdint.h>
 
 #define ETH_II_MAC_LEN      6
-#define ETH_II_TYPE_IPV4    0x0800
+#define ETH_II_TYPE_IPv4    0x0800
 #define ETH_II_TYPE_ARP     0x0806
-#define ETH_II_TYPE_IPV6    0x86DD
+#define ETH_II_TYPE_IPv6    0x86DD
 
 #define IP_STR_LEN          12
 

@@ -12,11 +12,12 @@ Stack *stack_new() {
     return stack;
 }
 
-void stack_push(Stack *stack, void *data, uint8_t protocol) {
+void stack_push(Stack *stack, void *data, uint8_t protocol, uint16_t up_protocol) {
     StackNode *node = malloc(sizeof(StackNode));
     if (node == nullptr) return;
     node->data = data;
     node->protocol = protocol;
+    node->up_protocol = up_protocol;
     node->up = node->down = nullptr;
     if (stack->bottom == nullptr) {
         stack->bottom = node;
@@ -44,4 +45,8 @@ StackNode *stack_pop(Stack *stack) {
 StackNode *stack_peek(const Stack *stack) {
     if (stack->top == nullptr) return nullptr;
     return stack->top;
+}
+
+_Bool stack_is_empty(const Stack *stack) {
+    return stack->size == 0;
 }

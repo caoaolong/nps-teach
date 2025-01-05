@@ -18,7 +18,7 @@ Arp_Hdr *arp_parse(const unsigned char *data) {
 }
 
 void arp_print(const Arp_Hdr *arp) {
-    if (arp->p_type == ETH_II_TYPE_IPV4) {
+    if (arp->p_type == ETH_II_TYPE_IPv4) {
         printf("\t\t who has %s, tell %s\n", get_ip_str(arp->tpa), get_ip_str(arp->spa));
     }
 }
@@ -30,7 +30,7 @@ int arp_send(pcap_t *handle, char *tpa, uint8_t type) {
     host_mac(eth_ii_hdr.source_mac);
     memset(eth_ii_hdr.target_mac, 0xFF, ETH_II_MAC_LEN);
     Arp_Hdr arp_hdr = {
-        .h_type = htons(1), .p_type = htons(ETH_II_TYPE_IPV4), .h_len = 6, .p_len = 4,
+        .h_type = htons(1), .p_type = htons(ETH_II_TYPE_IPv4), .h_len = 6, .p_len = 4,
         .operate = htons(1),
         .spa = HOST_IP.s_addr,
         .tpa = HOST_IP.s_addr

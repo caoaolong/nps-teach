@@ -3,8 +3,6 @@
 //
 #include <prtc.h>
 
-Icmp_Hdr *icmp_hdr;
-
 Ip_Hdr *ip_parse(const unsigned char *data) {
     Ip_Hdr *ip_hdr = malloc(sizeof(Ip_Hdr));
     if (ip_hdr == NULL) return nullptr;
@@ -16,13 +14,6 @@ Ip_Hdr *ip_parse(const unsigned char *data) {
     ip_hdr->ff.v = ntohs(ip_hdr->ff.v);
     ip_hdr->src = ntohl(ip_hdr->src);
     ip_hdr->dst = ntohl(ip_hdr->dst);
-
-    // 判断上层协议类型
-    if (ip_hdr->protocol == IP_TOP_ICMP) {
-        uint16_t hl = ip_hdr->ihl * 4;
-        // TODO: 放入协议栈中
-        icmp_hdr = icmp_parse(data + hl, ip_hdr->len - hl);
-    }
 
     return ip_hdr;
 }
@@ -53,10 +44,4 @@ void ip_print(const Ip_Hdr *ip_hdr) {
         printf("\t\t TOP: ICMP\n");
     }
     printf("\t\t %s → %s\n", get_ip_str(ip_hdr->src), get_ip_str(ip_hdr->dst));
-
-    // 判断上层协议类型
-    if (ip_hdr->protocol == IP_TOP_ICMP) {
-        // TODO: 从协议栈中读取并打印
-        icmp_print(icmp_hdr);
-    }
 }
