@@ -7,10 +7,7 @@ Icmp_Hdr *icmp_parse(const unsigned char *data, uint16_t len) {
     Icmp_Hdr *icmp_hdr = malloc(len);
     if (icmp_hdr == NULL) return nullptr;
     memcpy(icmp_hdr, data, len);
-    if (!icmp_checksum(icmp_hdr, len)) {
-        free(icmp_hdr);
-        return nullptr;
-    }
+    // if (!icmp_checksum(icmp_hdr, len)) return nullptr;
     return icmp_hdr;
 }
 

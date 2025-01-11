@@ -6,7 +6,6 @@
 #define STACK_H
 
 #include <stdint.h>
-#include <stdbool.h>>
 
 #define SP_NULL     0
 #define SP_ETH      1

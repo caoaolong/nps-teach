@@ -101,4 +101,8 @@ void ip_print(const Ip_Hdr *ip_hdr);
 Icmp_Hdr *icmp_parse(const unsigned char *data, uint16_t len);
 BOOL icmp_checksum(Icmp_Hdr *icmp_hdr, uint16_t len);
 void icmp_print(const Icmp_Hdr *icmp);
+
+Udp_Hdr *udp_parse(const unsigned char *data, uint16_t len);
+BOOL udp_checksum(Udp_Hdr *udp_hdr, uint16_t len);
+void udp_print(const Udp_Hdr *udp);
 #endif //PRTC_H

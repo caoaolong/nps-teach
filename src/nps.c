@@ -23,7 +23,7 @@ int main() {
 #ifdef USE_FILTER
     // 设置过滤器
     struct bpf_program fp;
-    char filter_exp[] = "icmp";
+    char filter_exp[] = "udp";
     bpf_u_int32 net = 0;
     // 编译过滤器
     if (pcap_compile(handle, &fp, filter_exp, 0, net) == -1) {

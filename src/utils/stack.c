@@ -12,7 +12,7 @@ Stack *stack_new() {
     return stack;
 }
 
-void stack_push(Stack *stack, void *data, uint8_t protocol, uint16_t up_protocol) {
+void stack_push(Stack *stack, void *data, const uint8_t protocol, const uint16_t up_protocol) {
     StackNode *node = malloc(sizeof(StackNode));
     if (node == nullptr) return;
     node->data = data;

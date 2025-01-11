@@ -60,5 +60,16 @@ typedef struct __attribute__((__packed__)) {
     uint8_t type;
     uint8_t code;
     uint16_t checksum;
+    uint8_t data[];
 } Icmp_Hdr;
+
+// UDP Header
+typedef struct __attribute__((__packed__)) {
+    uint16_t sp;
+    uint16_t tp;
+    uint16_t length;
+    uint16_t checksum;
+    uint8_t data[];
+} Udp_Hdr;
+
 #endif //HDR_H

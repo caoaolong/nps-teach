@@ -143,7 +143,7 @@ void device_handler(unsigned char *user, const struct pcap_pkthdr *header, const
             }
             case SP_ICMP: {
                 const StackNode *node = stack_peek(stack);
-                const uint16_t len = ((Ip_Hdr *) node->data)->len - (((Ip_Hdr *) node->data)->ihl * 4);
+                const uint16_t len = ((Ip_Hdr *) node->data)->len - ((Ip_Hdr *) node->data)->ihl * 4;
                 Icmp_Hdr *icmp_hdr = icmp_parse(data, len);
                 top_type = SP_NULL;
                 stack_push(stack, icmp_hdr, SP_ICMP, top_type);
@@ -151,6 +151,17 @@ void device_handler(unsigned char *user, const struct pcap_pkthdr *header, const
                 data += len;
                 // 输出
                 icmp_print(icmp_hdr);
+                break;
+            }
+            case SP_UDP: {
+                const StackNode *node = stack_peek(stack);
+                const uint16_t len = ((Ip_Hdr *) node->data)->len - ((Ip_Hdr *) node->data)->ihl * 4;
+                Udp_Hdr *udp_hdr = udp_parse(data, len);
+                top_type = SP_NULL;
+                stack_push(stack, udp_hdr, SP_UDP, top_type);
+                // 计算长度偏移量
+                data += len;
+                udp_print(udp_hdr);
                 break;
             }
         }
