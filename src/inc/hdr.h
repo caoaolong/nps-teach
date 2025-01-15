@@ -36,18 +36,21 @@ typedef struct __attribute__((__packed__)) {
 
 // IP Header
 typedef struct __attribute__((__packed__)) {
-    uint8_t ihl:4;
-    uint8_t version:4;
+    uint8_t ihl: 4;
+    uint8_t version: 4;
     uint8_t tos;
     uint16_t len;
     uint16_t identification;
+
     union {
         uint16_t v;
+
         struct {
-            uint16_t fo:13;
-            uint16_t flag:3;
+            uint16_t fo: 13;
+            uint16_t flag: 3;
         };
     } ff;
+
     uint8_t ttl;
     uint8_t protocol;
     uint16_t checksum;
@@ -71,5 +74,27 @@ typedef struct __attribute__((__packed__)) {
     uint16_t checksum;
     uint8_t data[];
 } Udp_Hdr;
+
+// TCP Header
+typedef struct __attribute__((__packed__)) {
+    uint16_t sp;
+    uint16_t tp;
+    uint32_t seq;
+    uint32_t ack;
+
+    union {
+        uint16_t v;
+
+        struct {
+            uint16_t flags: 6;
+            uint16_t unused: 6;
+            uint16_t offset: 4;
+        };
+    } ff;
+
+    uint16_t ws;
+    uint16_t checksum;
+    uint16_t up;
+} Tcp_Hdr;
 
 #endif //HDR_H
