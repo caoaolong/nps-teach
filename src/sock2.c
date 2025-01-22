@@ -99,7 +99,7 @@ int accept2(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
     }
     // TODO: 发送[SYN,ACK]数据包
     sock2fd->state = SYN_RECEIVED;
-    // TODO: 捕获SYN数据包, 传递解析函数 tcp_is(FLAG_ACK)
+    // TODO: 捕获ACK数据包, 传递解析函数 tcp_is(FLAG_ACK)
     ret = pcap_loop(sock2fd->handle, -1, device_handler, nullptr);
     if (ret < 0) {
         return -1;
@@ -148,6 +148,7 @@ int close2(int sockfd) {
     if (ret < 0) {
         return -1;
     }
+    // TODO: 发送ACK数据包
     sock2fd->state = TIME_WAIT;
     // TODO: 等待2MSL
     sock2fd->state = CLOSED;
