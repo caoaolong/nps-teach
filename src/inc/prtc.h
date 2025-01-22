@@ -106,6 +106,13 @@ Udp_Hdr *udp_parse(const unsigned char *data, uint16_t len);
 BOOL udp_checksum(Udp_Hdr *udp_hdr, uint16_t len);
 void udp_print(const Udp_Hdr *udp);
 
+// flags
+#define FLAG_URG     0b000001
+#define FLAG_ACK     0b000010
+#define FLAG_PSH     0b000100
+#define FLAG_RST     0b001000
+#define FLAG_SYN     0b010000
+#define FLAG_FIN     0b100000
 Tcp_Hdr *tcp_parse(const unsigned char *data);
 BOOL tcp_checksum(Tcp_Hdr *tcp_hdr);
 void tcp_print(const Tcp_Hdr *tcp);
