@@ -50,3 +50,12 @@ StackNode *stack_peek(const Stack *stack) {
 _Bool stack_is_empty(const Stack *stack) {
     return stack->size == 0;
 }
+
+void stack_free(Stack *stack) {
+    while (!stack_is_empty(stack)) {
+        StackNode *node = stack_pop(stack);
+        if (node != nullptr)
+            free(node);
+    }
+    free(stack);
+}

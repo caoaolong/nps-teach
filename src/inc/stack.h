@@ -35,5 +35,6 @@ void stack_push(Stack *stack, void *data, uint8_t protocol, uint16_t up_protocol
 StackNode *stack_pop(Stack *stack);
 StackNode *stack_peek(const Stack *stack);
 _Bool stack_is_empty(const Stack *stack);
+void stack_free(Stack *stack);
 
 #endif //STACK_H

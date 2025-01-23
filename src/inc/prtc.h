@@ -116,4 +116,5 @@ void udp_print(const Udp_Hdr *udp);
 Tcp_Hdr *tcp_parse(const unsigned char *data);
 BOOL tcp_checksum(Tcp_Hdr *tcp_hdr);
 void tcp_print(const Tcp_Hdr *tcp);
+void tcp_process(Stack *stack);
 #endif //PRTC_H

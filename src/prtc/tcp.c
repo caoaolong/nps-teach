@@ -2,6 +2,7 @@
 // Created by admin on 25-1-15.
 //
 #include <prtc.h>
+#include <sock2.h>
 
 Tcp_Hdr *tcp_parse(const unsigned char *data) {
     Tcp_Hdr *tcp_hdr = malloc(sizeof(Tcp_Hdr));
@@ -25,4 +26,14 @@ BOOL tcp_checksum(Tcp_Hdr *tcp_hdr) {
 
 void tcp_print(const Tcp_Hdr *tcp) {
     printf("\t\t\t Port: %u -> %u\n", tcp->sp, tcp->tp);
+}
+
+extern Sock2Fd sock2fds[MAX_FDS];
+
+void tcp_process(Stack *stack) {
+    for (int i = 0; i < MAX_FDS; i++) {
+        if (sock2fds[i].fd == -1)
+            continue;
+        // TODO: 处理协议栈
+    }
 }

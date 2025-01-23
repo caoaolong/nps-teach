@@ -175,4 +175,17 @@ void device_handler(unsigned char *user, const struct pcap_pkthdr *header, const
             }
         }
     } while (top_type > 0);
+    // 派发协议栈处理函数
+    dispatch(stack);
+}
+
+void dispatch(Stack *stack) {
+    const StackNode *node = stack_peek(stack);
+    switch (node->protocol) {
+        default:
+            stack_free(stack);
+        case SP_TCP:
+            tcp_process(stack);
+            break;
+    }
 }

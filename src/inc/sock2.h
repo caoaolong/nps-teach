@@ -7,6 +7,9 @@
 
 #include <prtc.h>
 
+// limits
+#define MAX_FDS         1024
+
 // domain
 #define AF_INET        1
 
@@ -17,6 +20,38 @@
 // protocol
 #define IPPROTO_TCP    6
 #define IPPROTO_UDP    17
+
+// states
+typedef enum {
+    CLOSED,
+    LISTEN,
+    SYN_SENT,
+    SYN_RECEIVED,
+    ESTABLISHED,
+    FIN_WAIT1,
+    FIN_WAIT2,
+    TIME_WAIT,
+    LAST_ACK,
+    CLOSE_WAIT
+} TcpState;
+
+typedef struct {
+    int domain;
+    int type;
+    int protocol;
+    int fd;
+    TcpState state;
+
+    union {
+        struct sockaddr;
+        struct sockaddr_in;
+    } addr;
+
+    int backlog;
+} Sock2Fd;
+
+void sock2_init();
+int max_fd();
 
 int socket2(int domain, int type, int protocol);
 int bind2(int sockfd, struct sockaddr *addr, socklen_t addrlen);

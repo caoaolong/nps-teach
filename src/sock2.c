@@ -3,46 +3,16 @@
 //
 #include <sock2.h>
 
-// limits
-#define MAX_FDS 1024
-
-// states
-typedef enum {
-    CLOSED,
-    LISTEN,
-    SYN_SENT,
-    SYN_RECEIVED,
-    ESTABLISHED,
-    FIN_WAIT1,
-    FIN_WAIT2,
-    TIME_WAIT,
-    LAST_ACK,
-    CLOSE_WAIT
-} State;
-
 // data
-
 static int fd = 0;
 
-typedef struct {
-    int domain;
-    int type;
-    int protocol;
-    int fd;
-    State state;
+Sock2Fd sock2fds[MAX_FDS];
 
-    union {
-        struct sockaddr;
-        struct sockaddr_in;
-    } addr;
-
-    int backlog;
-    // devices
-    pcap_if_t *alldevs;
-    pcap_t *handle;
-} Sock2Fd;
-
-static Sock2Fd sock2fds[MAX_FDS];
+void sock2_init() {
+    for (int i = 0; i < MAX_FDS; i++) {
+        sock2fds[i].fd = -1;
+    }
+}
 
 int socket2(int domain, int type, int protocol) {
     if (fd >= MAX_FDS || fd < 0) return -1;
@@ -53,23 +23,6 @@ int socket2(int domain, int type, int protocol) {
     sock2fd->protocol = protocol;
     sock2fd->fd = fd;
     sock2fd->state = CLOSED;
-
-    sock2fd->alldevs = nullptr;
-    char errbuf[PCAP_ERRBUF_SIZE];
-    // 获取网卡
-    pcap_if_t *device = device_find(sock2fd->alldevs, getenv("NCID"));
-    if (device == nullptr) {
-        fprintf(stderr, "No device found\n");
-        return -1;
-    }
-    // 打开设备
-    pcap_t *handle = pcap_open_live(device->name, 65536, 0, 1000, errbuf);
-    if (!handle) {
-        fprintf(stderr, "Unable to open device: %s\n", errbuf);
-        pcap_freealldevs(sock2fd->alldevs);
-        return -1;
-    }
-    sock2fd->handle = handle;
     return fd;
 }
 
@@ -93,17 +46,9 @@ int accept2(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
     Sock2Fd *sock2fd = &sock2fds[sockfd - 1];
     if (sock2fd->state != LISTEN) return -1;
     // TODO: 捕获SYN数据包, 传递解析函数 tcp_is(FLAG_SYN)
-    int ret = pcap_loop(sock2fd->handle, -1, device_handler, nullptr);
-    if (ret < 0) {
-        return -1;
-    }
     // TODO: 发送[SYN,ACK]数据包
     sock2fd->state = SYN_RECEIVED;
     // TODO: 捕获SYN数据包, 传递解析函数 tcp_is(FLAG_ACK)
-    ret = pcap_loop(sock2fd->handle, -1, device_handler, nullptr);
-    if (ret < 0) {
-        return -1;
-    }
     sock2fd->state = ESTABLISHED;
     // TODO: 保存客户端信息
     return 0;
@@ -138,20 +83,11 @@ int close2(int sockfd) {
     // TODO: 发送FIN数据包
     sock2fd->state = FIN_WAIT1;
     // TODO: 捕获[ACK]数据包, 传递解析函数 tcp_is(FLAG_ACK)
-    int ret = pcap_loop(sock2fd->handle, -1, device_handler, nullptr);
-    if (ret < 0) {
-        return -1;
-    }
     sock2fd->state = FIN_WAIT2;
     // TODO: 捕获[FIN]数据包, 传递解析函数 tcp_is(FLAG_FIN)
-    ret = pcap_loop(sock2fd->handle, -1, device_handler, nullptr);
-    if (ret < 0) {
-        return -1;
-    }
     sock2fd->state = TIME_WAIT;
     // TODO: 等待2MSL
     sock2fd->state = CLOSED;
-    pcap_close(sock2fd->handle);
-    pcap_freealldevs(sock2fd->alldevs);
+
     return 0;
 }
