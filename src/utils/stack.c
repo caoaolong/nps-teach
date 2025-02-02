@@ -37,6 +37,7 @@ StackNode *stack_pop(Stack *stack) {
         stack->bottom = nullptr;
     }
     stack->top = stack->top->down;
+    if (stack->top == NULL || stack->size == 0) return nullptr;
     stack->top->up = nullptr;
     stack->size--;
     return node;

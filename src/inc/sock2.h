@@ -40,8 +40,8 @@ typedef struct {
     int type;
     int protocol;
     int fd;
+    uint16_t sid;
     TcpState state;
-
     union {
         struct sockaddr;
         struct sockaddr_in;

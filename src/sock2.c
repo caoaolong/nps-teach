@@ -9,9 +9,7 @@ static int fd = 0;
 Sock2Fd sock2fds[MAX_FDS];
 
 void sock2_init() {
-    for (int i = 0; i < MAX_FDS; i++) {
-        sock2fds[i].fd = -1;
-    }
+    for (int i = 0; i < MAX_FDS; i++) sock2fds[i].fd = -1;
 }
 
 int socket2(int domain, int type, int protocol) {
@@ -30,7 +28,18 @@ int bind2(int sockfd, struct sockaddr *addr, socklen_t addrlen) {
     if (sockfd >= MAX_FDS || sockfd < 0) return -1;
     Sock2Fd *sock2fd = &sock2fds[sockfd - 1];
     memcpy(&sock2fd->addr, addr, addrlen);
-    return 0;
+    // 注册服务
+    int sid = -1;
+    if (sock2fd->protocol == IPPROTO_TCP) {
+        sid = service_register(SP_TCP, ((struct sockaddr_in*)addr)->sin_port);
+    } else if (sock2fd->protocol == IPPROTO_UDP) {
+        sid = service_register(SP_UDP, ((struct sockaddr_in*)addr)->sin_port);
+    }
+    if (sid >= 0) {
+        sock2fd->sid = sid;
+        return 0;
+    }
+    return sid;
 }
 
 int listen2(int sockfd, int backlog) {
@@ -88,6 +97,7 @@ int close2(int sockfd) {
     sock2fd->state = TIME_WAIT;
     // TODO: 等待2MSL
     sock2fd->state = CLOSED;
-
+    // 注销服务
+    service_unregister(sock2fd->sid);
     return 0;
 }
