@@ -1,15 +1,17 @@
 ﻿#include <nps.h>
+#include <ncursesw/curses.h>
 #include <sock2.h>
 #include <pthread.h>
 
 pthread_t envp;
+pcap_t *handle;
 
 void *nps_pcap_loop(void *handle) {
     int ret;
     struct pcap_pkthdr *hdr;
     u_char *data;
     while ((ret = pcap_next_ex(handle, &hdr, &data)) >= 0) {
-        if(ret == 0) continue;
+        if (ret == 0) continue;
         device_handler(nullptr, hdr, data);
     }
     return handle;
@@ -27,39 +29,53 @@ void env_init() {
         return;
     }
     // 打开设备
-    pcap_t *handle = pcap_open_live(device->name, 65536, FALSE, 1000, errbuf);
+    handle = pcap_open_live(device->name, 65536, FALSE, 1000, errbuf);
     if (!handle) {
         fprintf(stderr, "Unable to open device: %s\n", errbuf);
         pcap_freealldevs(alldevs);
         return;
     }
 
-    if (!pthread_create(&envp, nullptr, nps_pcap_loop, handle)) {
+    if (pthread_create(&envp, nullptr, nps_pcap_loop, handle) != 0) {
+        perror("pthread_create");
         fprintf(stderr, "Unable to create environment thread\n");
     }
+}
+
+void ncurses_init() {
+    // 初始化 ncurses
+    initscr();
+    cbreak();
+    noecho();
+    curs_set(0); // 隐藏光标
+    refresh();
 }
 
 void nps_init() {
     sock2_init();
     env_init();
+    ncurses_init();
 }
 
 void nps_free() {
-    void *handle;
-    pthread_join(envp, &handle);
+    pthread_cancel(envp);
     pcap_close(handle);
     pcap_freealldevs(alldevs);
 }
 
 int main() {
-    // pcap_if_t *alldevs = nullptr;
-    // devices_info(alldevs);
-    // pcap_freealldevs(alldevs);
     // 初始化环境
     nps_init();
     // 执行用户态协议
     nps_main();
-    // 释放环境资源
+    // 监听键盘事件
+    while (true) {
+        char c = getch();
+        if (c == '\033') {
+            endwin();
+            break;
+        }
+    }
     nps_free();
     return 0;
 }

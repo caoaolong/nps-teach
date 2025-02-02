@@ -151,7 +151,7 @@ void device_handler(unsigned char *user, const struct pcap_pkthdr *header, const
                 printf("Unknown packet type\n");
                 return;
             case SP_LB:
-                printf("Loopback\n");
+                // printf("Loopback\n");
                 data += 4;
                 top_type = SP_IPv4;
                 break;
