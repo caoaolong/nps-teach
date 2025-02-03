@@ -1,5 +1,4 @@
 ﻿#include <nps.h>
-#include <ncursesw/curses.h>
 #include <sock2.h>
 #include <pthread.h>
 
@@ -42,19 +41,10 @@ void env_init() {
     }
 }
 
-void ncurses_init() {
-    // 初始化 ncurses
-    initscr();
-    cbreak();
-    noecho();
-    curs_set(0); // 隐藏光标
-    refresh();
-}
-
 void nps_init() {
     sock2_init();
     env_init();
-    ncurses_init();
+    view_init();
 }
 
 void nps_free() {
@@ -66,6 +56,8 @@ void nps_free() {
 int main() {
     // 初始化环境
     nps_init();
+    // 显示界面
+    nps_view();
     // 执行用户态协议
     nps_main();
     // 监听键盘事件
@@ -74,6 +66,13 @@ int main() {
         if (c == '\033') {
             endwin();
             break;
+        }
+        if (isprint(c)) {
+            cmd_put_char(c);
+        } else if (c == '\n') {
+            cmd_exec();
+        } else if (c == '\a') {
+            cmd_pop_char();
         }
     }
     nps_free();

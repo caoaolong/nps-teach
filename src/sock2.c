@@ -12,6 +12,10 @@ void sock2_init() {
     for (int i = 0; i < MAX_FDS; i++) sock2fds[i].fd = -1;
 }
 
+Sock2Fd *sock2fd(int fd) {
+    return &sock2fds[fd - 1];
+}
+
 int socket2(int domain, int type, int protocol) {
     if (fd >= MAX_FDS || fd < 0) return -1;
     Sock2Fd *sock2fd = &sock2fds[fd];
@@ -31,9 +35,9 @@ int bind2(int sockfd, struct sockaddr *addr, socklen_t addrlen) {
     // 注册服务
     int sid = -1;
     if (sock2fd->protocol == IPPROTO_TCP) {
-        sid = service_register(SP_TCP, ((struct sockaddr_in*)addr)->sin_port);
+        sid = service_register(SP_TCP, ((struct sockaddr_in*)addr)->sin_port, sockfd);
     } else if (sock2fd->protocol == IPPROTO_UDP) {
-        sid = service_register(SP_UDP, ((struct sockaddr_in*)addr)->sin_port);
+        sid = service_register(SP_UDP, ((struct sockaddr_in*)addr)->sin_port, sockfd);
     }
     if (sid >= 0) {
         sock2fd->sid = sid;

@@ -10,17 +10,6 @@
 // limits
 #define MAX_FDS         1024
 
-// domain
-#define AF_INET        1
-
-// type
-#define SOCK_STREAM    1
-#define SOCK_DGRAM     2
-
-// protocol
-#define IPPROTO_TCP    6
-#define IPPROTO_UDP    17
-
 // states
 typedef enum {
     CLOSED,
@@ -51,7 +40,7 @@ typedef struct {
 } Sock2Fd;
 
 void sock2_init();
-int max_fd();
+Sock2Fd *sock2fd(int fd);
 
 int socket2(int domain, int type, int protocol);
 int bind2(int sockfd, struct sockaddr *addr, socklen_t addrlen);

@@ -4,6 +4,7 @@
 #include <nps.h>
 #include <prtc.h>
 #include <stack.h>
+#include <sock2.h>
 
 struct in_addr HOST_IP;
 
@@ -15,7 +16,11 @@ void service_init() {
     }
 }
 
-int service_register(uint8_t protocol, uint16_t port) {
+Dev_Service *service_table() {
+    return services;
+}
+
+int service_register(uint8_t protocol, uint16_t port, uint16_t sockid) {
     Dev_Service *service = nullptr;
     int i = 0;
     for (; i < SERVICES_SIZE; i++) {
@@ -28,7 +33,9 @@ int service_register(uint8_t protocol, uint16_t port) {
     if (service) {
         service->protocol = protocol;
         service->port = port;
-        memset(&services[i].buffer, 0, sizeof(Dev_Buffer));
+        service->sockid = sockid;
+        memset(&service->buffer, 0, sizeof(Dev_Buffer));
+        nps_view();
         return i;
     }
     return -1;
@@ -44,8 +51,48 @@ void service_put_packet(uint8_t protocol, uint16_t port, Stack *data) {
         if (service->protocol == protocol && service->port == port) {
             Dev_Buffer *buffer = &services[i].buffer;
             buffer->data[buffer->size++] = data;
+            nps_view();
             break;
         }
+    }
+}
+
+const char *service_protocol_str(const Dev_Service *service) {
+    switch (service->protocol) {
+        case SP_TCP:
+            return "TCP";
+        case SP_UDP:
+            return "UDP";
+        default:
+            return "Unknown";
+    }
+}
+
+const char *service_status_str(const Dev_Service *service) {
+    TcpState state = sock2fd(service->sockid)->state;
+    switch (state) {
+        case CLOSED:
+            return "CLOSED";
+        case LISTEN:
+            return "LISTEN";
+        case ESTABLISHED:
+            return "ESTABLISHED";
+        case SYN_SENT:
+            return "SYN_SENT";
+        case SYN_RECEIVED:
+            return "SYN_RECEIVED";
+        case FIN_WAIT1:
+            return "FIN_WAIT1";
+        case FIN_WAIT2:
+            return "FIN_WAIT2";
+        case CLOSE_WAIT:
+            return "CLOSE_WAIT";
+        case TIME_WAIT:
+            return "TIME_WAIT";
+        case LAST_ACK:
+            return "LAST_ACK";
+        default:
+            return "Unknown";
     }
 }
 

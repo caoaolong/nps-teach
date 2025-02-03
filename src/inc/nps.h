@@ -7,30 +7,62 @@
 
 #include <pcap.h>
 #include <stack.h>
+#include <winsock2.h>
+#include <ncursesw/curses.h>
 
+#define CMD_SIZE        64
 #define BUFFER_SIZE     1024
 #define SERVICES_SIZE   1024
+#define CLIENTS_SIZE    1024
+
+typedef struct Cmd {
+    int write;
+    char cmd[64];
+} Cmd;
+
+void cmd_put_char(char c);
+
+void cmd_pop_char();
+
+void cmd_exec();
 
 typedef struct Dev_Buffer {
     Stack *data[BUFFER_SIZE];
     int size;
 }Dev_Buffer;
 
+typedef struct Dev_Client {
+    uint16_t size;
+    struct sockaddr address[CLIENTS_SIZE];
+} Dev_Client;
+
 typedef struct Dev_Service {
     uint8_t protocol;
     uint16_t port;
+    uint16_t sockid;
     Dev_Buffer buffer;
+    Dev_Client clients;
 } Dev_Service;
+
+typedef enum Bd_Type {
+    UP, DOWN, NORMAL
+} Bd_Type;
 
 void service_init();
 
-int service_register(uint8_t protocol, uint16_t port);
+int service_register(uint8_t protocol, uint16_t port, uint16_t sockid);
 
 void service_unregister(uint16_t sid);
 
 void service_put_packet(uint8_t protocol, uint16_t port, Stack *data);
 
+const char *service_protocol_str(const Dev_Service *service);
+
+const char *service_status_str(const Dev_Service *service);
+
 Stack *service_get_packet(uint16_t sid);
+
+Dev_Service *service_table();
 
 void devices_info(pcap_if_t *alldevs);
 
@@ -38,7 +70,9 @@ pcap_if_t *device_find(pcap_if_t *alldevs, const char *name);
 
 void device_handler(unsigned char *user, const struct pcap_pkthdr *header, const unsigned char *pkt_data);
 
-void dispatch(Stack *stack);
-
 void nps_main();
+
+void nps_view();
+
+void view_init();
 #endif //NPS_H

@@ -15,6 +15,7 @@ add_executable(nps_teach src/nps.c src/device.c src/sock2.c
         src/utils/stack.c
         src/prtc/udp.c
         src/prtc/tcp.c
-        src/nps_main.c)
+        src/nps_main.c
+        src/nps_view.c)
 
 target_link_libraries(nps_teach ws2_32 Packet.lib wpcap.lib ncursesw)
