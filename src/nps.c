@@ -1,6 +1,7 @@
 ﻿#include <nps.h>
 #include <sock2.h>
 #include <pthread.h>
+#include <ncursesw/ncurses.h>
 
 pthread_t envp;
 pcap_t *handle;
@@ -34,7 +35,7 @@ void env_init() {
         pcap_freealldevs(alldevs);
         return;
     }
-
+    service_init(handle);
     if (pthread_create(&envp, nullptr, nps_pcap_loop, handle) != 0) {
         perror("pthread_create");
         fprintf(stderr, "Unable to create environment thread\n");

@@ -19,11 +19,17 @@ void nps_main() {
         perror("bind2");
         exit(1);
     }
-    // ret = listen2(sockfd, 5);
-    // if (ret < 0) {
-    //     perror("listen2");
-    //     exit(1);
-    // }
-    //
+    ret = listen2(sockfd, 5);
+    if (ret < 0) {
+        perror("listen2");
+        exit(1);
+    }
+    struct sockaddr_in client;
+    int size = sizeof(client);
+    ret = accept2(sockfd, (struct sockaddr*)&client, &size);
+    if (ret < 0) {
+        perror("accept2");
+        exit(1);
+    }
     // close2(sockfd);
 }

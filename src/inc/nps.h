@@ -8,10 +8,9 @@
 #include <pcap.h>
 #include <stack.h>
 #include <winsock2.h>
-#include <ncursesw/curses.h>
 
 #define CMD_SIZE        64
-#define BUFFER_SIZE     1024
+#define BUFFER_SIZE     128
 #define SERVICES_SIZE   1024
 #define CLIENTS_SIZE    1024
 
@@ -40,15 +39,16 @@ typedef struct Dev_Service {
     uint8_t protocol;
     uint16_t port;
     uint16_t sockid;
-    Dev_Buffer buffer;
+    Dev_Buffer ibuf, obuf;
     Dev_Client clients;
+    pcap_t *handle;
 } Dev_Service;
 
 typedef enum Bd_Type {
     UP, DOWN, NORMAL
 } Bd_Type;
 
-void service_init();
+void service_init(pcap_t *pcap);
 
 int service_register(uint8_t protocol, uint16_t port, uint16_t sockid);
 
@@ -56,11 +56,13 @@ void service_unregister(uint16_t sid);
 
 void service_put_packet(uint8_t protocol, uint16_t port, Stack *data);
 
+void service_send_packet(uint16_t sid, Stack *data);
+
 const char *service_protocol_str(const Dev_Service *service);
 
 const char *service_status_str(const Dev_Service *service);
 
-Stack *service_get_packet(uint16_t sid);
+Stack *service_get_packet(uint16_t sid, uint8_t type);
 
 Dev_Service *service_table();
 

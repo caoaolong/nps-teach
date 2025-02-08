@@ -2,6 +2,7 @@
 // Created by admin on 25-2-3.
 //
 #include <nps.h>
+#include <ncursesw/curses.h>
 
 Cmd cmd;
 
@@ -116,7 +117,7 @@ void nps_view() {
         addch(ACS_VLINE);
         mvprintw(r, 2, "%10d%10d%10s%10d%17s%10d%10d",
             i, sv->sockid, service_protocol_str(sv), sv->port, "",
-            sv->buffer.size, sv->clients.size);
+            sv->ibuf.size, sv->clients.size);
         move(r, mc - 1);
         addch(ACS_VLINE);
         attron(COLOR_PAIR(2) | A_BOLD);

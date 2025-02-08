@@ -10,9 +10,10 @@ struct in_addr HOST_IP;
 
 Dev_Service services[SERVICES_SIZE];
 
-void service_init() {
+void service_init(pcap_t *pcap) {
     for (int i = 0; i < SERVICES_SIZE; i++) {
         memset(&services[i], 0, sizeof(Dev_Service));
+        services[i].handle = pcap;
     }
 }
 
@@ -34,7 +35,7 @@ int service_register(uint8_t protocol, uint16_t port, uint16_t sockid) {
         service->protocol = protocol;
         service->port = port;
         service->sockid = sockid;
-        memset(&service->buffer, 0, sizeof(Dev_Buffer));
+        memset(&service->ibuf, 0, sizeof(Dev_Buffer));
         nps_view();
         return i;
     }
@@ -49,11 +50,40 @@ void service_put_packet(uint8_t protocol, uint16_t port, Stack *data) {
     for (int i = 0; i < SERVICES_SIZE; i++) {
         Dev_Service *service = &services[i];
         if (service->protocol == protocol && service->port == port) {
-            Dev_Buffer *buffer = &services[i].buffer;
+            Dev_Buffer *buffer = &services[i].ibuf;
             buffer->data[buffer->size++] = data;
             nps_view();
             break;
         }
+    }
+}
+
+void service_send_packet(uint16_t sid, Stack *data) {
+    Dev_Service *service = &services[sid];
+    if (service->obuf.size < BUFFER_SIZE - 1) {
+        service->obuf.data[service->obuf.size++] = data;
+    }
+}
+
+void service_send_packets() {
+    for (int i = 0; i < SERVICES_SIZE; i++) {
+        Dev_Service *service = &services[i];
+        if (service->protocol < 0)
+            continue;
+        Dev_Buffer *buffer = &services[i].obuf;
+        if (buffer->size == 0)
+            continue;
+        int size = 0;
+        u_char *data = stack_encode(service_get_packet(i, 2), &size);
+        if (!data) {
+            perror("stack_encode");
+            continue;
+        }
+        if (!pcap_sendpacket(service->handle, data, size)) {
+            perror("pcap_sendpacket");
+            continue;
+        }
+        nps_view();
     }
 }
 
@@ -96,16 +126,33 @@ const char *service_status_str(const Dev_Service *service) {
     }
 }
 
-Stack *service_get_packet(uint16_t sid) {
+// type = 1 : ibuf
+// type = 2 : obuf
+Stack *service_get_packet(uint16_t sid, uint8_t type) {
     Dev_Service *service = &services[sid];
-    if (service->protocol == 0 || service->buffer.size == 0)
+    if (service->protocol == 0)
         return nullptr;
-    Stack *data = service->buffer.data[0];
-    for (int i = 0; i < service->buffer.size; i++) {
-        service->buffer.data[i] = service->buffer.data[i + 1];
+    if (type == 1) {
+        if (service->ibuf.size == 0)
+            return nullptr;
+        Stack *data = service->ibuf.data[0];
+        for (int i = 0; i < service->ibuf.size; i++) {
+            service->ibuf.data[i] = service->ibuf.data[i + 1];
+        }
+        service->ibuf.size--;
+        return data;
     }
-    service->buffer.size--;
-    return data;
+    if (type == 2) {
+        if (service->obuf.size == 0)
+            return nullptr;
+        Stack *data = service->obuf.data[0];
+        for (int i = 0; i < service->obuf.size; i++) {
+            service->obuf.data[i] = service->obuf.data[i + 1];
+        }
+        service->obuf.size--;
+        return data;
+    }
+    return nullptr;
 }
 
 void devices_info(pcap_if_t *alldevs) {
@@ -185,111 +232,11 @@ void device_handler(unsigned char *user, const struct pcap_pkthdr *header, const
     // printf("\nPacket captured:\n");
     // printf("Timestamp: %ld.%ld seconds\n", header->ts.tv_sec, header->ts.tv_usec);
     // printf("Packet length: %d bytes\n", header->len);
-    const unsigned char *data = pkt_data;
-    Stack *stack = stack_new();
-    int top_type = SP_ETH;
-    if (*(uint32_t *)data == 2) {
-        top_type = SP_LB;
-    }
-    int port = 0;
-    do {
-        switch (top_type) {
-            default:
-                printf("Unknown packet type\n");
-                return;
-            case SP_LB:
-                // printf("Loopback\n");
-                data += 4;
-                top_type = SP_IPv4;
-                break;
-            case SP_ETH: {
-                // 以太网帧头
-                EthII_Hdr *eth_ii = eth_ii_parse(data);
-                // 获取上层协议类型
-                if (eth_ii->type == ETH_II_TYPE_ARP) {
-                    top_type = SP_ARP;
-                } else if (eth_ii->type == ETH_II_TYPE_IPv4) {
-                    top_type = SP_IPv4;
-                } else if (eth_ii->type == ETH_II_TYPE_IPv6) {
-                    top_type = SP_IPv6;
-                } else {
-                    return;
-                }
-                stack_push(stack, eth_ii, SP_ETH, top_type);
-                // 计算长度偏移量
-                data += sizeof(EthII_Hdr);
-                // 输出
-                // eth_ii_print(eth_ii);
-                break;
-            }
-            case SP_ARP: {
-                // ARP协议
-                Arp_Hdr *arp_hdr = arp_parse(data);
-                top_type = SP_NULL;
-                stack_push(stack, arp_hdr, SP_ARP, top_type);
-                // 计算长度偏移量
-                data += sizeof(Arp_Hdr);
-                // 输出
-                // arp_print(arp_hdr);
-                break;
-            }
-            case SP_IPv4: {
-                Ip_Hdr *ip_hdr = ip_parse(data);
-                if (!ip_hdr) return;
-                // 获取上层协议类型
-                if (ip_hdr->protocol == IPPROTO_ICMP) {
-                    top_type = SP_ICMP;
-                } else if (ip_hdr->protocol == IPPROTO_TCP) {
-                    top_type = SP_TCP;
-                } else if (ip_hdr->protocol == IPPROTO_UDP) {
-                    top_type = SP_UDP;
-                } else {
-                    return;
-                }
-                stack_push(stack, ip_hdr, SP_IPv4, top_type);
-                // 计算长度偏移量
-                data += ip_hdr->ihl * 4;
-                // 输出
-                // ip_print(ip_hdr);
-                break;
-            }
-            case SP_ICMP: {
-                const StackNode *node = stack_peek(stack);
-                const uint16_t len = ((Ip_Hdr *) node->data)->len - ((Ip_Hdr *) node->data)->ihl * 4;
-                Icmp_Hdr *icmp_hdr = icmp_parse(data, len);
-                top_type = SP_NULL;
-                stack_push(stack, icmp_hdr, SP_ICMP, top_type);
-                // 计算长度偏移量
-                data += len;
-                // 输出
-                // icmp_print(icmp_hdr);
-                break;
-            }
-            case SP_UDP: {
-                const StackNode *node = stack_peek(stack);
-                const uint16_t len = ((Ip_Hdr *) node->data)->len - ((Ip_Hdr *) node->data)->ihl * 4;
-                Udp_Hdr *udp_hdr = udp_parse(data, len);
-                top_type = SP_NULL;
-                port = udp_hdr->tp;
-                stack_push(stack, udp_hdr, SP_UDP, top_type);
-                // 计算长度偏移量
-                data += len;
-                // udp_print(udp_hdr);
-                break;
-            }
-            case SP_TCP: {
-                Tcp_Hdr *tcp_hdr = tcp_parse(data);
-                top_type = SP_NULL;
-                port = tcp_hdr->tp;
-                stack_push(stack, tcp_hdr, SP_TCP, top_type);
-                // 计算长度偏移量
-                data += sizeof(Tcp_Hdr);
-                // tcp_print(tcp_hdr);
-                break;
-            }
-        }
-    } while (top_type > 0);
-    // fflush(stdout);
+    // 检测服务发送数据包
+    service_send_packets();
+    // 解码数据包
+    uint16_t port;
+    Stack *stack = stack_decode(pkt_data, &port);
     // 检测服务分发数据包
     StackNode *top = stack_peek(stack);
     service_put_packet(top->protocol, port, stack);
