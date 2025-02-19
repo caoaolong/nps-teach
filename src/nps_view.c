@@ -88,6 +88,10 @@ static void print_title(int y, int x, const char *title) {
     attroff(COLOR_PAIR(1) | A_BOLD | A_STANDOUT);
 }
 
+void nps_set_result(const char *msg) {
+    strcpy(cmd.rst, msg);
+}
+
 void nps_view() {
     clear();
     // Service Table
@@ -147,6 +151,13 @@ void nps_view() {
     }
     mvprintw(r, 1, "CMD >");
     mvprintw(r, 10, "%s", cmd.cmd);
+    r++;
+    mvaddch(r, 0, ACS_VLINE);
+    mvaddch(r, mc - 1, ACS_VLINE);
+    r++;
+    mvaddch(r, 0, ACS_VLINE);
+    mvprintw(r, 1, cmd.rst);
+    mvaddch(r, mc - 1, ACS_VLINE);
     r++;
     print_border(r, 0, DOWN);
     refresh();

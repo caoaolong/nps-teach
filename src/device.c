@@ -79,8 +79,8 @@ void service_send_packets() {
             perror("stack_encode");
             continue;
         }
-        if (!pcap_sendpacket(service->handle, data, size)) {
-            perror("pcap_sendpacket");
+        if (pcap_sendpacket(service->handle, data, size) != 0) {
+            nps_set_result(pcap_geterr(service->handle));
             continue;
         }
         free(data);

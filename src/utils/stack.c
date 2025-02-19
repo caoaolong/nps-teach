@@ -92,21 +92,23 @@ u_char *stack_encode(Stack *stack, int *size) {
                 break;
             case SP_IPv4:
                 Ip_Hdr *ip_hdr = node->data;
-                // ip_hdr->len = htons(ip_hdr->len);
-                // ip_hdr->identification = htons(ip_hdr->identification);
-                // ip_hdr->ff.v = htons(ip_hdr->ff.v);
-                // ip_hdr->src = htonl(ip_hdr->src);
-                // ip_hdr->dst = htonl(ip_hdr->dst);
+                ip_hdr->len = htons(ip_hdr->len);
+                ip_hdr->identification = htons(ip_hdr->identification);
+                ip_hdr->ff.v = htons(ip_hdr->ff.v);
+                ip_hdr->src = htonl(ip_hdr->src);
+                ip_hdr->dst = htonl(ip_hdr->dst);
                 memcpy(pdata, ip_hdr, sizeof(Ip_Hdr));
                 epip = (Ip_Hdr *) pdata;
                 pdata += sizeof(Ip_Hdr);
                 break;
             case SP_TCP:
                 Tcp_Hdr *tcp_hdr = node->data;
-                // tcp_hdr->seq = htonl(tcp_hdr->seq);
-                // tcp_hdr->ack = htonl(tcp_hdr->ack);
-                // tcp_hdr->ff.v = htons(tcp_hdr->ff.v);
-                // tcp_hdr->ws = htons(tcp_hdr->ws);
+                tcp_hdr->seq = htonl(tcp_hdr->seq);
+                tcp_hdr->ack = htonl(tcp_hdr->ack);
+                tcp_hdr->ff.v = htons(tcp_hdr->ff.v);
+                tcp_hdr->ws = htons(tcp_hdr->ws);
+                tcp_hdr->sp = htons(tcp_hdr->sp);
+                tcp_hdr->tp = htons(tcp_hdr->tp);
                 memcpy(pdata, tcp_hdr, sizeof(Tcp_Hdr));
                 pdata += sizeof(Tcp_Hdr);
                 break;

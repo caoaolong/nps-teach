@@ -17,6 +17,7 @@
 typedef struct Cmd {
     int write;
     char cmd[64];
+    char rst[80];
 } Cmd;
 
 void cmd_put_char(char c);
@@ -73,6 +74,8 @@ pcap_if_t *device_find(pcap_if_t *alldevs, const char *name);
 void device_handler(unsigned char *user, const struct pcap_pkthdr *header, const unsigned char *pkt_data);
 
 void nps_main();
+
+void nps_set_result(const char *msg);
 
 void nps_view();
 
