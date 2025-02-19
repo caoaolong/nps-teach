@@ -66,8 +66,65 @@ void stack_free(Stack *stack) {
 u_char *stack_encode(Stack *stack, int *size) {
     if (stack == nullptr || stack_is_empty(stack))
         return nullptr;
-    // TODO: 编码协议栈
-    return nullptr;
+    // 编码协议栈
+    uint8_t *data = malloc(1500);
+    if (!data) return nullptr;
+    memset(data, 0, 1500);
+    uint8_t *pdata = data;
+    // 用于记录链路层协议类型
+    uint8_t lptype = 0;
+    // 用于修改编码后数据的指针
+    Ip_Hdr *epip = nullptr;
+
+
+    StackNode *node = stack->bottom;
+    while (node && node->protocol) {
+        switch (node->protocol) {
+            case SP_LB:
+                lptype = SP_LB;
+                *(uint32_t *) pdata = 2;
+                pdata += 4;
+                break;
+            case SP_ETH:
+                EthII_Hdr *eth_hdr = node->data;
+                memcpy(pdata, eth_hdr, sizeof(EthII_Hdr));
+                pdata += sizeof(EthII_Hdr);
+                break;
+            case SP_IPv4:
+                Ip_Hdr *ip_hdr = node->data;
+                // ip_hdr->len = htons(ip_hdr->len);
+                // ip_hdr->identification = htons(ip_hdr->identification);
+                // ip_hdr->ff.v = htons(ip_hdr->ff.v);
+                // ip_hdr->src = htonl(ip_hdr->src);
+                // ip_hdr->dst = htonl(ip_hdr->dst);
+                memcpy(pdata, ip_hdr, sizeof(Ip_Hdr));
+                epip = (Ip_Hdr *) pdata;
+                pdata += sizeof(Ip_Hdr);
+                break;
+            case SP_TCP:
+                Tcp_Hdr *tcp_hdr = node->data;
+                // tcp_hdr->seq = htonl(tcp_hdr->seq);
+                // tcp_hdr->ack = htonl(tcp_hdr->ack);
+                // tcp_hdr->ff.v = htons(tcp_hdr->ff.v);
+                // tcp_hdr->ws = htons(tcp_hdr->ws);
+                memcpy(pdata, tcp_hdr, sizeof(Tcp_Hdr));
+                pdata += sizeof(Tcp_Hdr);
+                break;
+            case SP_UDP:
+                Udp_Hdr *udp_hdr = node->data;
+                memcpy(pdata, udp_hdr, sizeof(Udp_Hdr));
+                pdata += sizeof(Udp_Hdr);
+                break;
+            default:
+                break;
+        }
+        node = node->up;
+    }
+    *size = (int) (pdata - data);
+    if (lptype == SP_LB) {
+        epip->len = htons(*size - 4);
+    }
+    return data;
 }
 
 Stack *stack_decode(const unsigned char *data, uint16_t *pport) {
@@ -84,7 +141,10 @@ Stack *stack_decode(const unsigned char *data, uint16_t *pport) {
                 stack_free(stack);
                 return nullptr;
             case SP_LB:
-                // printf("Loopback\n");
+                uint32_t *plb = malloc(4);
+                *plb = *(uint32_t *) data;
+                stack_push(stack, plb, SP_LB, top_type);
+            // printf("Loopback\n");
                 data += 4;
                 top_type = SP_IPv4;
                 break;
@@ -186,13 +246,101 @@ Stack *stack_decode(const unsigned char *data, uint16_t *pport) {
 }
 
 Stack *stack_build_tcp(Stack *src, uint8_t flags, u_char *data) {
-    // TODO: 构建TCP包
-    return nullptr;
+    // 构建TCP包
+    Stack *dst = stack_new();
+    uint8_t top_type = SP_NULL;
+    if (src) {
+        StackNode *node = src->bottom;
+        while (node && node->protocol) {
+            switch (node->protocol) {
+                case SP_LB:
+                    uint32_t *plb = malloc(4);
+                    memcpy(plb, node->data, sizeof(uint32_t));
+                    top_type = SP_IPv4;
+                    stack_push(dst, plb, SP_LB, top_type);
+                    break;
+                case SP_ETH:
+                    EthII_Hdr *dst_eth_ii = malloc(sizeof(EthII_Hdr));
+                    EthII_Hdr *src_eth_hdr = node->data;
+                    memcpy(dst_eth_ii->source_mac, src_eth_hdr->target_mac, ETH_II_MAC_LEN);
+                    memcpy(dst_eth_ii->target_mac, src_eth_hdr->source_mac, ETH_II_MAC_LEN);
+                // 获取上层协议类型
+                    if (src_eth_hdr->type == ETH_II_TYPE_ARP) {
+                        top_type = SP_ARP;
+                    } else if (src_eth_hdr->type == ETH_II_TYPE_IPv4) {
+                        top_type = SP_IPv4;
+                    } else if (src_eth_hdr->type == ETH_II_TYPE_IPv6) {
+                        top_type = SP_IPv6;
+                    } else {
+                        stack_free(dst);
+                        return nullptr;
+                    }
+                    stack_push(dst, dst_eth_ii, SP_ETH, top_type);
+                    break;
+                case SP_IPv4:
+                    Ip_Hdr *dst_ip_hdr = malloc(sizeof(Ip_Hdr));
+                    Ip_Hdr *src_ip_hdr = node->data;
+                    memcpy(dst_ip_hdr, node->data, sizeof(Ip_Hdr));
+                    dst_ip_hdr->src = src_ip_hdr->dst;
+                    dst_ip_hdr->dst = src_ip_hdr->src;
+                    dst_ip_hdr->ttl = 128;
+                    dst_ip_hdr->identification = src_ip_hdr->identification + 1;
+                // 获取上层协议类型
+                    if (dst_ip_hdr->protocol == IPPROTO_ICMP) {
+                        top_type = SP_ICMP;
+                    } else if (dst_ip_hdr->protocol == IPPROTO_TCP) {
+                        top_type = SP_TCP;
+                    } else if (dst_ip_hdr->protocol == IPPROTO_UDP) {
+                        top_type = SP_UDP;
+                    } else {
+                        stack_free(dst);
+                        return nullptr;
+                    }
+                    stack_push(dst, dst_ip_hdr, SP_IPv4, top_type);
+                    break;
+                case SP_TCP:
+                    Tcp_Hdr *dst_tcp_hdr = malloc(sizeof(Tcp_Hdr));
+                    Tcp_Hdr *src_tcp_hdr = node->data;
+                    memcpy(dst_tcp_hdr, node->data, sizeof(Tcp_Hdr));
+                    dst_tcp_hdr->sp = src_tcp_hdr->tp;
+                    dst_tcp_hdr->tp = src_tcp_hdr->sp;
+                    dst_tcp_hdr->ff.flags = flags;
+                    if (flags & FLAG_SYN) {
+                        dst_tcp_hdr->seq++;
+                    } else if (flags & FLAG_ACK) {
+                        dst_tcp_hdr->ack++;
+                    }
+                    top_type = SP_NULL;
+                    stack_push(dst, dst_tcp_hdr, SP_TCP, top_type);
+                    break;
+                default:
+                    break;
+            }
+            node = node->up;
+        }
+    }
+    return dst;
 }
 
 struct sockaddr stack_addr_info(Stack *stack) {
-    // TODO: 获取地址信息
-    struct sockaddr addr;
-    addr.sa_family = AF_INET;
-    return addr;
+    // 获取地址信息
+    struct sockaddr_in *addr = malloc(sizeof(struct sockaddr_in));
+    addr->sin_family = AF_INET;
+    StackNode *node = stack->bottom;
+    while (node && node->up_protocol) {
+        switch (node->protocol) {
+            case SP_IPv4:
+                Ip_Hdr *ip_hdr = node->data;
+                addr->sin_addr.s_addr = ntohl(ip_hdr->src);
+                break;
+            case SP_TCP:
+                Tcp_Hdr *tcp_hdr = node->data;
+                addr->sin_port = htons(tcp_hdr->sp);
+                break;
+            default:
+                break;
+        }
+        node = node->up;
+    }
+    return *(struct sockaddr *) addr;
 }

@@ -83,6 +83,7 @@ void service_send_packets() {
             perror("pcap_sendpacket");
             continue;
         }
+        free(data);
         nps_view();
     }
 }
@@ -229,15 +230,14 @@ pcap_if_t *device_find(pcap_if_t *alldevs, const char *name) {
 }
 
 void device_handler(unsigned char *user, const struct pcap_pkthdr *header, const unsigned char *pkt_data) {
-    // printf("\nPacket captured:\n");
-    // printf("Timestamp: %ld.%ld seconds\n", header->ts.tv_sec, header->ts.tv_usec);
-    // printf("Packet length: %d bytes\n", header->len);
     // 检测服务发送数据包
     service_send_packets();
     // 解码数据包
     uint16_t port;
     Stack *stack = stack_decode(pkt_data, &port);
     // 检测服务分发数据包
-    StackNode *top = stack_peek(stack);
-    service_put_packet(top->protocol, port, stack);
+    if (stack) {
+        StackNode *top = stack_peek(stack);
+        service_put_packet(top->protocol, port, stack);
+    }
 }

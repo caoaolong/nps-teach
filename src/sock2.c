@@ -32,6 +32,7 @@ int socket2(int domain, int type, int protocol) {
     sock2fd->protocol = protocol;
     sock2fd->fd = fd;
     sock2fd->state = CLOSED;
+    nps_view();
     return fd;
 }
 
@@ -58,7 +59,24 @@ int listen2(int sockfd, int backlog) {
     Sock2Fd *sock2fd = &sock2fds[sockfd - 1];
     sock2fd->backlog = backlog;
     sock2fd->state = LISTEN;
+    nps_view();
     return 0;
+}
+
+static Stack *receive_packet(Sock2Fd *sock2fd, uint8_t protocol, uint8_t flags) {
+    Stack *stack;
+    while (true) {
+        usleep(100);
+        stack = service_get_packet(sock2fd->sid, 1);
+        if (!stack)
+            continue;
+        if (!packet_is(stack, protocol, flags)) {
+            stack_pop(stack);
+            continue;
+        }
+        break;
+    }
+    return stack;
 }
 
 int accept2(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
@@ -66,22 +84,15 @@ int accept2(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
     Sock2Fd *sock2fd = &sock2fds[sockfd - 1];
     if (sock2fd->state != LISTEN) return -1;
     // 捕获SYN数据包, 判断是否为 SYN
-    Stack *stack;
-    do {
-        stack = service_get_packet(sock2fd->sid, 1);
-        stack_pop(stack);
-        sleep(100);
-    } while (!packet_is(stack, SP_TCP, FLAG_SYN));
+    Stack *stack = receive_packet(sock2fd, SP_TCP, FLAG_SYN);
     // 发送[SYN,ACK]数据包
     service_send_packet(sock2fd->sid, stack_build_tcp(stack, FLAG_SYN | FLAG_ACK, nullptr));
     sock2fd->state = SYN_RECEIVED;
+    nps_view();
     // 捕获SYN数据包, 判断是否为 ACK
-    do {
-        stack = service_get_packet(sock2fd->sid, 1);
-        stack_pop(stack);
-        sleep(100);
-    } while (!packet_is(stack, SP_TCP, FLAG_ACK));
+    stack = receive_packet(sock2fd, SP_TCP, FLAG_ACK);
     sock2fd->state = ESTABLISHED;
+    nps_view();
     // 保存客户端信息
     *addr = stack_addr_info(stack);
     *addrlen = sizeof(*addr);
@@ -104,22 +115,17 @@ int recv2(int sockfd, void *buf, size_t len, int flags) {
     Stack *stack = service_get_packet(sock2fd->sid, 1);
     if (packet_is(stack, SP_TCP, FLAG_FIN)) {
         // 捕获[FIN]数据包后, 发送[ACK]数据包
-        do {
-            stack = service_get_packet(sock2fd->sid, 1);
-            stack_pop(stack);
-            sleep(100);
-        } while (!packet_is(stack, SP_TCP, FLAG_FIN));
+        stack = receive_packet(sock2fd, SP_TCP, FLAG_FIN);
         sock2fd->state = CLOSE_WAIT;
+        nps_view();
         // 发送[FIN]数据包
         service_send_packet(sock2fd->sid, stack_build_tcp(stack, FLAG_ACK, nullptr));
         sock2fd->state = LAST_ACK;
+        nps_view();
         // 捕获[ACK]数据包
-        do {
-            stack = service_get_packet(sock2fd->sid, 1);
-            stack_pop(stack);
-            sleep(100);
-        } while (!packet_is(stack, SP_TCP, FLAG_ACK));
+        receive_packet(sock2fd, SP_TCP, FLAG_ACK);
         sock2fd->state = CLOSED;
+        nps_view();
         // 注销服务
         service_unregister(sock2fd->sid);
     } else {
@@ -135,18 +141,17 @@ int close2(int sockfd) {
     // 发送FIN数据包
     service_send_packet(sock2fd->sid, stack_build_tcp(stack, FLAG_SYN | FLAG_ACK, nullptr));
     sock2fd->state = FIN_WAIT1;
-    do {
-        stack = service_get_packet(sock2fd->sid, 1);
-        stack_pop(stack);
-        sleep(100);
-    } while (!packet_is(stack, SP_TCP, FLAG_ACK));
-    sock2fd->state = FIN_WAIT2;
+    nps_view();
+    stack = receive_packet(sock2fd, SP_TCP, FLAG_ACK);
+    nps_view();
     // 捕获[FIN]数据包
     service_send_packet(sock2fd->sid, stack_build_tcp(stack, FLAG_FIN, nullptr));
     sock2fd->state = TIME_WAIT;
+    nps_view();
     // 等待2MSL(MSL设置为60)
-    sleep(2 * 60);
+    usleep(2 * 60);
     sock2fd->state = CLOSED;
+    nps_view();
     // 注销服务
     service_unregister(sock2fd->sid);
     return 0;
