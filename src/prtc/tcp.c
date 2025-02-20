@@ -28,12 +28,33 @@ void tcp_print(const Tcp_Hdr *tcp) {
     printf("\t\t\t Port: %u -> %u\n", tcp->sp, tcp->tp);
 }
 
-extern Sock2Fd sock2fds[MAX_FDS];
-
-void tcp_process(Stack *stack) {
-    for (int i = 0; i < MAX_FDS; i++) {
-        if (sock2fds[i].fd == -1)
-            continue;
-        // TODO: 处理协议栈
+Tcp_Option *tcp_option(const unsigned char *data) {
+    Tcp_Option *tcp_op = malloc(sizeof(Tcp_Option));
+    if (!tcp_op) return nullptr;
+    tcp_op->kind = *data++;
+    switch (tcp_op->kind) {
+        case 0x02: // Maximum Segment Size
+            tcp_op->length = *data++;
+            tcp_op->mss_value = *(uint16_t *) data;
+            data += 2;
+            break;
+        case 0x03: // Window Scale
+            tcp_op->length = *data++;
+            tcp_op->shift_count = *data++;
+            break;
+        case 0x04: // SACK Permitted
+            tcp_op->length = *data++;
+            break;
+        case 0x01: // No Operation
+            tcp_op->length = 1;
+            return tcp_op;
+        default:
+            free(tcp_op);
+            return nullptr;
     }
+    if (tcp_op->length == 0) {
+        free(tcp_op);
+        return nullptr;
+    }
+    return tcp_op;
 }

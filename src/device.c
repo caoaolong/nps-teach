@@ -33,7 +33,7 @@ int service_register(uint8_t protocol, uint16_t port, uint16_t sockid) {
     }
     if (service) {
         service->protocol = protocol;
-        service->port = port;
+        service->port = ntohs(port);
         service->sockid = sockid;
         memset(&service->ibuf, 0, sizeof(Dev_Buffer));
         nps_view();
@@ -81,6 +81,7 @@ void service_send_packets() {
         }
         if (pcap_sendpacket(service->handle, data, size) != 0) {
             nps_set_result(pcap_geterr(service->handle));
+            nps_view();
             continue;
         }
         free(data);
@@ -238,6 +239,10 @@ void device_handler(unsigned char *user, const struct pcap_pkthdr *header, const
     // 检测服务分发数据包
     if (stack) {
         StackNode *top = stack_peek(stack);
-        service_put_packet(top->protocol, port, stack);
+        if (top->protocol == SP_TCP_OP) {
+            service_put_packet(SP_TCP, port, stack);
+        } else {
+            service_put_packet(top->protocol, port, stack);
+        }
     }
 }

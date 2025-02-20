@@ -97,4 +97,13 @@ typedef struct __attribute__((__packed__)) {
     uint16_t up;
 } Tcp_Hdr;
 
+typedef struct __attribute__((__packed__)) {
+    uint8_t kind;
+    uint8_t length;
+    union {
+        uint16_t mss_value;
+        uint8_t shift_count;
+    };
+} Tcp_Option;
+
 #endif //HDR_H

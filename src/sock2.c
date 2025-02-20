@@ -3,6 +3,7 @@
 //
 #include <sock2.h>
 #include <unistd.h>
+#include <errno.h>
 
 // data
 static int fd = 0;
@@ -11,11 +12,20 @@ Sock2Fd sock2fds[MAX_FDS];
 
 static bool packet_is(Stack *stack, uint8_t protocol, uint8_t flags) {
     StackNode *top = stack_peek(stack);
+    if (protocol == SP_TCP && top->protocol == SP_TCP_OP) {
+        return ((Tcp_Hdr*)top->data)->ff.flags & flags;
+    }
     if (top == NULL || top->protocol != protocol) return false;
     return ((Tcp_Hdr*)top->data)->ff.flags & flags;
 }
 
 void sock2_init() {
+    WSADATA wsaData;
+    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+        nps_set_result(strerror(errno));
+        nps_view();
+        return;
+    }
     for (int i = 0; i < MAX_FDS; i++) sock2fds[i].fd = -1;
 }
 
@@ -32,6 +42,12 @@ int socket2(int domain, int type, int protocol) {
     sock2fd->protocol = protocol;
     sock2fd->fd = fd;
     sock2fd->state = CLOSED;
+    sock2fd->sock = socket(domain, type, 0);
+    if (sock2fd->sock == INVALID_SOCKET) {
+        nps_set_result(strerror(errno));
+        nps_view();
+        return -1;
+    }
     nps_view();
     return fd;
 }
@@ -49,7 +65,11 @@ int bind2(int sockfd, struct sockaddr *addr, socklen_t addrlen) {
     }
     if (sid >= 0) {
         sock2fd->sid = sid;
-        return 0;
+        if (bind(sock2fd->sock, addr, addrlen) == SOCKET_ERROR) {
+            nps_set_result(strerror(errno));
+            nps_view();
+            return -1;
+        }
     }
     return sid;
 }
@@ -59,6 +79,11 @@ int listen2(int sockfd, int backlog) {
     Sock2Fd *sock2fd = &sock2fds[sockfd - 1];
     sock2fd->backlog = backlog;
     sock2fd->state = LISTEN;
+    if (listen(sock2fd->sock, backlog) == SOCKET_ERROR) {
+        nps_set_result(strerror(errno));
+        nps_view();
+        return -1;
+    }
     nps_view();
     return 0;
 }

@@ -16,6 +16,7 @@
 #define SP_ICMP     5
 #define SP_TCP      6
 #define SP_UDP      7
+#define SP_TCP_OP   10
 #define SP_LB       20
 
 typedef struct stack_node_t {

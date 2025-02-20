@@ -81,13 +81,10 @@ static uint16_t checksum(void *data, int len) {
 EthII_Hdr *eth_ii_parse(const unsigned char *data);
 void eth_ii_print(const EthII_Hdr *eth_ii);
 
-
 #define ARP_GRATUITOUS  1
 #define ARP_REQUEST     2
 Arp_Hdr *arp_parse(const unsigned char *data);
 void arp_print(const Arp_Hdr *arp);
-int arp_send(pcap_t *handle, char *tpa, uint8_t type);
-
 
 #define IPv4_VERSION    4
 #define IPv6_VERSION    6
@@ -116,5 +113,5 @@ void udp_print(const Udp_Hdr *udp);
 Tcp_Hdr *tcp_parse(const unsigned char *data);
 BOOL tcp_checksum(Tcp_Hdr *tcp_hdr);
 void tcp_print(const Tcp_Hdr *tcp);
-void tcp_process(Stack *stack);
+Tcp_Option *tcp_option(const unsigned char *data);
 #endif //PRTC_H

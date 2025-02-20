@@ -12,7 +12,7 @@ void nps_main() {
     }
     struct sockaddr_in addr;
     addr.sin_family = AF_INET;
-    addr.sin_port = 8888;
+    addr.sin_port = htons(8989);
     addr.sin_addr.s_addr = inet_addr("127.0.0.1");
     int ret = bind2(sockfd, (struct sockaddr*)&addr, sizeof(addr));
     if (ret < 0) {
@@ -31,5 +31,5 @@ void nps_main() {
         perror("accept2");
         exit(1);
     }
-    // close2(sockfd);
+    close2(sockfd);
 }

@@ -37,6 +37,8 @@ typedef struct {
     } addr;
 
     int backlog;
+    // Socket引用（防止RST包发送）
+    SOCKET sock;
 } Sock2Fd;
 
 void sock2_init();

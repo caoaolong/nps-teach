@@ -80,4 +80,9 @@ void nps_set_result(const char *msg);
 void nps_view();
 
 void view_init();
+
+// utils
+
+uint32_t gen_uint32_number();
+
 #endif //NPS_H

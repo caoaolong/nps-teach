@@ -112,6 +112,11 @@ u_char *stack_encode(Stack *stack, int *size) {
                 memcpy(pdata, tcp_hdr, sizeof(Tcp_Hdr));
                 pdata += sizeof(Tcp_Hdr);
                 break;
+            case SP_TCP_OP:
+                Tcp_Option *tcp_op = node->data;
+                memcpy(pdata, tcp_op, tcp_op->length);
+                pdata += tcp_op->length;
+                break;
             case SP_UDP:
                 Udp_Hdr *udp_hdr = node->data;
                 memcpy(pdata, udp_hdr, sizeof(Udp_Hdr));
@@ -231,13 +236,24 @@ Stack *stack_decode(const unsigned char *data, uint16_t *pport) {
                 break;
             }
             case SP_TCP: {
+                int hdrl = 0;
                 Tcp_Hdr *tcp_hdr = tcp_parse(data);
                 top_type = SP_NULL;
                 port = tcp_hdr->tp;
                 stack_push(stack, tcp_hdr, SP_TCP, top_type);
                 // 计算长度偏移量
                 data += sizeof(Tcp_Hdr);
+                hdrl += sizeof(Tcp_Hdr);
                 // tcp_print(tcp_hdr);
+                Tcp_Option *tcp_op;
+                while ((tcp_op = tcp_option(data))) {
+                    stack_push(stack, tcp_op, SP_TCP_OP, SP_TCP);
+                    data += tcp_op->length;
+                    hdrl += tcp_op->length;
+                    if (hdrl >= tcp_hdr->ff.offset * 4) {
+                        break;
+                    }
+                }
                 break;
             }
         }
@@ -307,13 +323,16 @@ Stack *stack_build_tcp(Stack *src, uint8_t flags, u_char *data) {
                     dst_tcp_hdr->sp = src_tcp_hdr->tp;
                     dst_tcp_hdr->tp = src_tcp_hdr->sp;
                     dst_tcp_hdr->ff.flags = flags;
-                    if (flags & FLAG_SYN) {
-                        dst_tcp_hdr->seq++;
-                    } else if (flags & FLAG_ACK) {
-                        dst_tcp_hdr->ack++;
+                    if (flags & (FLAG_SYN | FLAG_ACK)) {
+                        dst_tcp_hdr->ack = dst_tcp_hdr->seq + 1;
+                        dst_tcp_hdr->seq = gen_uint32_number();
                     }
                     top_type = SP_NULL;
                     stack_push(dst, dst_tcp_hdr, SP_TCP, top_type);
+                    break;
+                case SP_TCP_OP:
+                    Tcp_Option *tcp_op = node->data;
+                    stack_push(dst, tcp_op, SP_TCP_OP, SP_TCP);
                     break;
                 default:
                     break;
