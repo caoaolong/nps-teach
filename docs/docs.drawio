@@ -1,4 +1,4 @@
-<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.7.17 Chrome/128.0.6613.36 Electron/32.0.1 Safari/537.36" version="24.7.17" pages="11">
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.7.17 Chrome/128.0.6613.36 Electron/32.0.1 Safari/537.36" version="24.7.17" pages="13">
   <diagram name="OSI七层模型" id="kcrXX2a59Rj-RcSPHwbT">
     <mxGraphModel dx="1434" dy="836" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
@@ -1101,6 +1101,31 @@
         </mxCell>
         <mxCell id="oIlCzUzktdkVgWNOoDgq-7" value="Socket" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#FFFFFF;align=center;verticalAlign=middle;fontFamily=Helvetica;fontSize=12;fontColor=#FFFFFF;fillColor=#182E3E;" vertex="1" parent="1">
           <mxGeometry x="160" y="300" width="80" height="40" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="FAH3uydtJ4eWqvLYZh6Y" name="代码结构">
+    <mxGraphModel dx="1434" dy="836" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="E6M008PsGyEn6TgDjtj_" name="三次握手">
+    <mxGraphModel dx="683" dy="398" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="R_MD2vkXAJXPGW62DG9y-1" value="&lt;div&gt;&lt;font color=&quot;#ff3333&quot;&gt;&lt;b&gt;&lt;u&gt;02 00 00 00&lt;/u&gt;&lt;/b&gt;&lt;/font&gt; &lt;font color=&quot;#ff8000&quot;&gt;&lt;b&gt;&lt;u&gt;45 00 00 28 6b 2a 40 00 80 06 00 00&lt;/u&gt;&lt;/b&gt;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font color=&quot;#ff8000&quot;&gt;&lt;b&gt;&lt;u&gt;7f 00 00 01 7f 00 00 01&lt;/u&gt;&lt;/b&gt;&lt;/font&gt; &lt;font color=&quot;#ffff00&quot;&gt;&lt;b&gt;&lt;u&gt;c1 52&lt;/u&gt;&lt;/b&gt;&lt;/font&gt; &lt;font color=&quot;#99ff33&quot;&gt;&lt;b&gt;&lt;u&gt;23 1d&lt;/u&gt;&lt;/b&gt;&lt;/font&gt; 44 2a 20 b4&lt;/div&gt;&lt;div&gt;ed db 14 0f 50 10 20 fa 45 9f 00 00&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;&amp;nbsp;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;align=center;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="40" y="280" width="360" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="R_MD2vkXAJXPGW62DG9y-2" value="&lt;u style=&quot;&quot;&gt;&lt;font style=&quot;&quot; color=&quot;#ff3333&quot;&gt;&lt;b&gt;02 00 00 00&lt;/b&gt;&lt;/font&gt;&lt;/u&gt; &lt;b&gt;&lt;u&gt;&lt;font color=&quot;#ff8000&quot;&gt;45 00 00 34 6b 28 40 00 80 06 00 00&lt;br&gt;7f 00 00 01 7f 00 00 01&lt;/font&gt;&lt;/u&gt;&lt;/b&gt; &lt;b&gt;&lt;u&gt;&lt;font color=&quot;#ffff00&quot;&gt;c1 52&lt;/font&gt;&lt;/u&gt;&lt;/b&gt; &lt;b&gt;&lt;u&gt;&lt;font color=&quot;#99ff33&quot;&gt;23 1d&lt;/font&gt;&lt;/u&gt;&lt;/b&gt; &lt;font color=&quot;#33ff99&quot;&gt;&lt;b&gt;&lt;u&gt;44 2a 20 b3&lt;/u&gt;&lt;/b&gt;&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#33ffff&quot;&gt;&lt;b&gt;&lt;u&gt;00 00 00 00&lt;/u&gt;&lt;/b&gt;&lt;/font&gt; 80 02 ff ff 2d 9d 00 00 02 04 ff d7&lt;br&gt;01 03 03 08 01 01 04 02&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;&amp;nbsp;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=default;align=center;verticalAlign=middle;fontFamily=Courier New;fontSize=12;fontColor=default;fillColor=default;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="360" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="R_MD2vkXAJXPGW62DG9y-3" value="&lt;div&gt;&lt;b&gt;&lt;u&gt;&lt;font color=&quot;#ff3333&quot;&gt;02 00 00 00&lt;/font&gt;&lt;/u&gt;&lt;/b&gt; &lt;font color=&quot;#ff8000&quot;&gt;&lt;b&gt;&lt;u&gt;45 00 00 34 6b 29 40 00 80 06 00 00&lt;/u&gt;&lt;/b&gt;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font color=&quot;#ff8000&quot;&gt;&lt;b&gt;&lt;u&gt;7f 00 00 01 7f 00 00 01&lt;/u&gt;&lt;/b&gt;&lt;/font&gt; &lt;b&gt;&lt;u&gt;&lt;font color=&quot;#99ff33&quot;&gt;23 1d&lt;/font&gt;&lt;/u&gt;&lt;/b&gt; &lt;font color=&quot;#ffff00&quot;&gt;&lt;b&gt;&lt;u&gt;c1 52&lt;/u&gt;&lt;/b&gt;&lt;/font&gt; &lt;font color=&quot;#33ffff&quot;&gt;&lt;b&gt;&lt;u&gt;ed db 14 0e&lt;/u&gt;&lt;/b&gt;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;44 2a 20 b4 80 12 ff ff 2b a2 00 00 02 04 ff d7&lt;/div&gt;&lt;div&gt;01 03 03 08 01 01 04 02&amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp; &amp;nbsp;&amp;nbsp;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=default;align=center;verticalAlign=middle;fontFamily=Courier New;fontSize=12;fontColor=default;fillColor=default;" vertex="1" parent="1">
+          <mxGeometry x="400" y="160" width="360" height="80" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
