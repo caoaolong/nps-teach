@@ -11,12 +11,15 @@ static int fd = 0;
 Sock2Fd sock2fds[MAX_FDS];
 
 static bool packet_is(Stack *stack, uint8_t protocol, uint8_t flags) {
-    StackNode *top = stack_peek(stack);
-    if (protocol == SP_TCP && top->protocol == SP_TCP_OP) {
-        return ((Tcp_Hdr*)top->data)->ff.flags & flags;
+    StackNode *pstack = stack_peek(stack);
+    while (pstack != NULL) {
+        if (pstack->protocol != protocol) {
+            pstack = pstack->down;
+        } else {
+            return ((Tcp_Hdr*)pstack->data)->ff.flags & flags;
+        }
     }
-    if (top == NULL || top->protocol != protocol) return false;
-    return ((Tcp_Hdr*)top->data)->ff.flags & flags;
+    return false;
 }
 
 void sock2_init() {
