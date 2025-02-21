@@ -42,12 +42,6 @@ int socket2(int domain, int type, int protocol) {
     sock2fd->protocol = protocol;
     sock2fd->fd = fd;
     sock2fd->state = CLOSED;
-    sock2fd->sock = socket(domain, type, 0);
-    if (sock2fd->sock == INVALID_SOCKET) {
-        nps_set_result(strerror(errno));
-        nps_view();
-        return -1;
-    }
     nps_view();
     return fd;
 }
@@ -63,14 +57,7 @@ int bind2(int sockfd, struct sockaddr *addr, socklen_t addrlen) {
     } else if (sock2fd->protocol == IPPROTO_UDP) {
         sid = service_register(SP_UDP, ((struct sockaddr_in*)addr)->sin_port, sockfd);
     }
-    if (sid >= 0) {
-        sock2fd->sid = sid;
-        if (bind(sock2fd->sock, addr, addrlen) == SOCKET_ERROR) {
-            nps_set_result(strerror(errno));
-            nps_view();
-            return -1;
-        }
-    }
+    sock2fd->sid = sid;
     return sid;
 }
 
@@ -79,11 +66,6 @@ int listen2(int sockfd, int backlog) {
     Sock2Fd *sock2fd = &sock2fds[sockfd - 1];
     sock2fd->backlog = backlog;
     sock2fd->state = LISTEN;
-    if (listen(sock2fd->sock, backlog) == SOCKET_ERROR) {
-        nps_set_result(strerror(errno));
-        nps_view();
-        return -1;
-    }
     nps_view();
     return 0;
 }

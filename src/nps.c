@@ -29,7 +29,7 @@ void env_init() {
         return;
     }
     // 打开设备
-    handle = pcap_open_live(device->name, 65536, FALSE, 1000, errbuf);
+    handle = pcap_open_live(device->name, 65536, TRUE, 1000, errbuf);
     if (!handle) {
         fprintf(stderr, "Unable to open device: %s\n", errbuf);
         pcap_freealldevs(alldevs);
