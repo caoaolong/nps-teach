@@ -23,12 +23,6 @@ static bool packet_is(Stack *stack, uint8_t protocol, uint8_t flags) {
 }
 
 void sock2_init() {
-    WSADATA wsaData;
-    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
-        nps_set_result(strerror(errno));
-        nps_view();
-        return;
-    }
     for (int i = 0; i < MAX_FDS; i++) sock2fds[i].fd = -1;
 }
 
