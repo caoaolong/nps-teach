@@ -1,13 +1,10 @@
-﻿//
-// Created by admin on 24-12-27.
-//
-#include <prtc.h>
+﻿#include <prtc.h>
 
 Ip_Hdr *ip_parse(const unsigned char *data) {
     Ip_Hdr *ip_hdr = malloc(sizeof(Ip_Hdr));
-    if (ip_hdr == NULL) return nullptr;
+    if (ip_hdr == NULL) return NULL;
     memcpy(ip_hdr, data, sizeof(Ip_Hdr));
-    if (!ip_checksum(ip_hdr)) return nullptr;
+    if (!ip_checksum(ip_hdr)) return NULL;
 
     ip_hdr->len = ntohs(ip_hdr->len);
     ip_hdr->identification = ntohs(ip_hdr->identification);
@@ -18,18 +15,18 @@ Ip_Hdr *ip_parse(const unsigned char *data) {
     return ip_hdr;
 }
 
-BOOL ip_checksum(Ip_Hdr *ip_hdr) {
+bool ip_checksum(Ip_Hdr *ip_hdr) {
     uint16_t recv_checksum = ip_hdr->checksum;
-    // 不进行校验
-    if (recv_checksum == 0) return TRUE;
-    // 计算校验和
+    /* 不进行校验 */
+    if (recv_checksum == 0) return true;
+    /* 计算校验和 */
     ip_hdr->checksum = 0;
     if (checksum(ip_hdr,  ip_hdr->ihl * 4) == recv_checksum) {
         ip_hdr->checksum = recv_checksum;
-        return TRUE;
+        return true;
     }
     free(ip_hdr);
-    return FALSE;
+    return false;
 }
 
 void ip_print(const Ip_Hdr *ip_hdr) {

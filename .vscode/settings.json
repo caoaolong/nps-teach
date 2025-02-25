@@ -1,0 +1,14 @@
+{
+    "files.associations": {
+        "ncurses.h": "c",
+        "nps.h": "c",
+        "stack.h": "c",
+        "sock2.h": "c",
+        "prtc.h": "c",
+        "pthread.h": "c",
+        "pcap.h": "c",
+        "types.h": "c",
+        "hdr.h": "c",
+        "string.h": "c"
+    }
+}

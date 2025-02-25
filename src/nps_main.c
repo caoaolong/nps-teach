@@ -1,7 +1,4 @@
-﻿//
-// Created by admin on 25-2-1.
-//
-#include <nps.h>
+﻿#include <nps.h>
 #include <sock2.h>
 
 extern struct in_addr HOST_IP;

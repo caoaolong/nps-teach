@@ -1,11 +1,7 @@
-//
-// Created by Administrator on 25-1-20.
-//
 #include <sock2.h>
 #include <unistd.h>
 #include <errno.h>
 
-// data
 static int fd = 0;
 
 Sock2Fd sock2fds[MAX_FDS];
@@ -23,7 +19,10 @@ static bool packet_is(Stack *stack, uint8_t protocol, uint8_t flags) {
 }
 
 void sock2_init() {
-    for (int i = 0; i < MAX_FDS; i++) sock2fds[i].fd = -1;
+    int i;
+    for (i = 0; i < MAX_FDS; i++) {
+        sock2fds[i].fd = -1;
+    }
 }
 
 Sock2Fd *sock2fd(int fd) {
@@ -47,7 +46,7 @@ int bind2(int sockfd, struct sockaddr *addr, socklen_t addrlen) {
     if (sockfd >= MAX_FDS || sockfd < 0) return -1;
     Sock2Fd *sock2fd = &sock2fds[sockfd - 1];
     memcpy(&sock2fd->addr, addr, addrlen);
-    // 注册服务
+    /* 注册服务 */
     int sid = -1;
     if (sock2fd->protocol == IPPROTO_TCP) {
         sid = service_register(SP_TCP, ((struct sockaddr_in*)addr)->sin_port, sockfd);
@@ -87,29 +86,29 @@ int accept2(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
     if (sockfd >= MAX_FDS || sockfd < 0) return -1;
     Sock2Fd *sock2fd = &sock2fds[sockfd - 1];
     if (sock2fd->state != LISTEN) return -1;
-    // 捕获SYN数据包, 判断是否为 SYN
+    /* 捕获SYN数据包, 判断是否为 SYN */
     Stack *stack = receive_packet(sock2fd, SP_TCP, FLAG_SYN);
-    // 发送[SYN,ACK]数据包
-    service_send_packet(sock2fd->sid, stack_build_tcp(stack, FLAG_SYN | FLAG_ACK, nullptr));
+    /* 发送[SYN,ACK]数据包 */
+    service_send_packet(sock2fd->sid, stack_build_tcp(stack, FLAG_SYN | FLAG_ACK, NULL));
     sock2fd->state = SYN_RECEIVED;
     nps_view();
-    // 捕获SYN数据包, 判断是否为 ACK
+    /* 捕获SYN数据包, 判断是否为 ACK */
     stack = receive_packet(sock2fd, SP_TCP, FLAG_ACK);
     sock2fd->state = ESTABLISHED;
     nps_view();
-    // 保存客户端信息
+    /* 保存客户端信息 */
     *addr = stack_addr_info(stack);
     *addrlen = sizeof(*addr);
     return 0;
 }
 
 int connect2(int sockfd, struct sockaddr *addr, socklen_t addrlen) {
-    // TODO: connect2
+    /* TODO: connect2 */
     return 0;
 }
 
 int send2(int sockfd, const void *buf, size_t len, int flags) {
-    // TODO: send2
+    /* TODO: send2 */
     return 0;
 }
 
@@ -118,22 +117,22 @@ int recv2(int sockfd, void *buf, size_t len, int flags) {
     Sock2Fd *sock2fd = &sock2fds[sockfd - 1];
     Stack *stack = service_get_packet(sock2fd->sid, 1);
     if (packet_is(stack, SP_TCP, FLAG_FIN)) {
-        // 捕获[FIN]数据包后, 发送[ACK]数据包
+        /* 捕获[FIN]数据包后, 发送[ACK]数据包 */
         stack = receive_packet(sock2fd, SP_TCP, FLAG_FIN);
         sock2fd->state = CLOSE_WAIT;
         nps_view();
-        // 发送[FIN]数据包
-        service_send_packet(sock2fd->sid, stack_build_tcp(stack, FLAG_ACK, nullptr));
+        /* 发送[FIN]数据包 */
+        service_send_packet(sock2fd->sid, stack_build_tcp(stack, FLAG_ACK, NULL));
         sock2fd->state = LAST_ACK;
         nps_view();
-        // 捕获[ACK]数据包
+        /* 捕获[ACK]数据包 */
         receive_packet(sock2fd, SP_TCP, FLAG_ACK);
         sock2fd->state = CLOSED;
         nps_view();
-        // 注销服务
+        /* 注销服务 */
         service_unregister(sock2fd->sid);
     } else {
-        // TODO: recv2
+        /* TODO: recv2 */
     }
     return 0;
 }
@@ -141,22 +140,22 @@ int recv2(int sockfd, void *buf, size_t len, int flags) {
 int close2(int sockfd) {
     if (sockfd >= MAX_FDS || sockfd < 0) return -1;
     Sock2Fd *sock2fd = &sock2fds[sockfd - 1];
-    Stack *stack = nullptr;
-    // 发送FIN数据包
-    service_send_packet(sock2fd->sid, stack_build_tcp(stack, FLAG_SYN | FLAG_ACK, nullptr));
+    Stack *stack = NULL;
+    /* 发送FIN数据包 */
+    service_send_packet(sock2fd->sid, stack_build_tcp(stack, FLAG_SYN | FLAG_ACK, NULL));
     sock2fd->state = FIN_WAIT1;
     nps_view();
     stack = receive_packet(sock2fd, SP_TCP, FLAG_ACK);
     nps_view();
-    // 捕获[FIN]数据包
-    service_send_packet(sock2fd->sid, stack_build_tcp(stack, FLAG_FIN, nullptr));
+    /* 捕获[FIN]数据包 */
+    service_send_packet(sock2fd->sid, stack_build_tcp(stack, FLAG_FIN, NULL));
     sock2fd->state = TIME_WAIT;
     nps_view();
-    // 等待2MSL(MSL设置为60)
+    /* 等待2MSL(MSL设置为60) */
     usleep(2 * 60);
     sock2fd->state = CLOSED;
     nps_view();
-    // 注销服务
+    /* 注销服务 */
     service_unregister(sock2fd->sid);
     return 0;
 }

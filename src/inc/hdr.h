@@ -1,7 +1,3 @@
-//
-// Created by Administrator on 24-12-23.
-//
-
 #ifndef HDR_H
 #define HDR_H
 
@@ -14,14 +10,14 @@
 
 #define IP_STR_LEN          12
 
-// Ethernet II Header
+/* Ethernet II Header */
 typedef struct __attribute__((__packed__)) {
     uint8_t target_mac[ETH_II_MAC_LEN];
     uint8_t source_mac[ETH_II_MAC_LEN];
     uint16_t type;
 } EthII_Hdr;
 
-// ARP Header
+/* ARP Header */
 typedef struct __attribute__((__packed__)) {
     uint16_t h_type;
     uint16_t p_type;
@@ -34,7 +30,7 @@ typedef struct __attribute__((__packed__)) {
     uint32_t tpa;
 } Arp_Hdr;
 
-// IP Header
+/* IP Header */
 typedef struct __attribute__((__packed__)) {
     uint8_t ihl: 4;
     uint8_t version: 4;
@@ -58,7 +54,7 @@ typedef struct __attribute__((__packed__)) {
     uint32_t dst;
 } Ip_Hdr;
 
-// ICMP Header
+/* ICMP Header */
 typedef struct __attribute__((__packed__)) {
     uint8_t type;
     uint8_t code;
@@ -66,7 +62,7 @@ typedef struct __attribute__((__packed__)) {
     uint8_t data[];
 } Icmp_Hdr;
 
-// UDP Header
+/* UDP Header */
 typedef struct __attribute__((__packed__)) {
     uint16_t sp;
     uint16_t tp;
@@ -75,7 +71,7 @@ typedef struct __attribute__((__packed__)) {
     uint8_t data[];
 } Udp_Hdr;
 
-// TCP Header
+/* TCP Header */
 typedef struct __attribute__((__packed__)) {
     uint16_t sp;
     uint16_t tp;
@@ -106,4 +102,4 @@ typedef struct __attribute__((__packed__)) {
     };
 } Tcp_Option;
 
-#endif //HDR_H
+#endif

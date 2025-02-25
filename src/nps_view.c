@@ -1,8 +1,6 @@
-﻿//
-// Created by admin on 25-2-3.
-//
-#include <nps.h>
-#include <ncursesw/curses.h>
+﻿#include <nps.h>
+#include <ncurses.h>
+#include <string.h>
 
 Cmd cmd;
 
@@ -30,23 +28,24 @@ void cmd_exec() {
 
 void view_init() {
     memset(&cmd, 0, sizeof(cmd));
-    // 初始化 ncurses
+    /* 初始化 ncurses */
     initscr();
     cbreak();
     noecho();
-    curs_set(0); // 隐藏光标
+    curs_set(0); /* 隐藏光标 */
     refresh();
-    // 颜色板
+    /* 颜色板 */
     start_color();
-    // header color
+    /* header color */
     init_pair(1, COLOR_BLACK, COLOR_WHITE);
-    // status color
+    /* status color */
     init_pair(2, COLOR_YELLOW, COLOR_BLACK);
 }
 
 static void print_border(int y, int x, Bd_Type bt) {
     move(y, x);
-    for (int c = 0; c < mc; c++) {
+    int c;
+    for (c = 0; c < mc; c++) {
         if (c == 0) {
             switch (bt) {
                 case UP:
@@ -81,7 +80,8 @@ static void print_title(int y, int x, const char *title) {
     attron(COLOR_PAIR(1) | A_BOLD | A_STANDOUT);
     mvprintw(y, x, title);
     int pad = mc - strlen(title) - 3;
-    for (int i = 0; i < pad; i++) {
+    int i;
+    for (i = 0; i < pad; i++) {
         addch(' ');
     }
     attroff(COLOR_PAIR(1) | A_BOLD | A_STANDOUT);
@@ -94,11 +94,12 @@ void nps_set_result(const char *msg) {
 
 void nps_view() {
     clear();
-    // Service Table
+    /* Service Table */
     int r = 0;
     print_border(r++, 0, UP);
     move(r, 0);
-    for (int c = 0; c < mc; c++) {
+    int c;
+    for (c = 0; c < mc; c++) {
         if (c == 0 || c == mc - 1) {
             addch(ACS_VLINE);
             continue;
@@ -114,7 +115,8 @@ void nps_view() {
     addch(ACS_VLINE);
     print_border(r++, 0, NORMAL);
     Dev_Service *st = service_table();
-    for (int i = 0; i < 3; i++) {
+    int i;
+    for (i = 0; i < 3; i++) {
         Dev_Service *sv = st + i;
         if (sv->protocol == 0) continue;
         move(r, 0);
@@ -132,7 +134,7 @@ void nps_view() {
     print_border(r++, 0, DOWN);
     print_border(r++, 0, UP);
     move(r, 0);
-    for (int c = 0; c < mc; c++) {
+    for (c = 0; c < mc; c++) {
         if (c == 0 || c == mc - 1) {
             addch(ACS_VLINE);
             continue;
@@ -142,7 +144,7 @@ void nps_view() {
     print_title(r++, 2, "Command Control");
     print_border(r++, 0, NORMAL);
     move(r, 0);
-    for (int c = 0; c < mc; c++) {
+    for (c = 0; c < mc; c++) {
         if (c == 0 || c == mc - 1) {
             addch(ACS_VLINE);
             continue;

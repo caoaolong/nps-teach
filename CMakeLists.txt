@@ -1,11 +1,11 @@
-cmake_minimum_required(VERSION 3.30)
+cmake_minimum_required(VERSION 3.10.2)
 project(nps_teach C)
 
-set(CMAKE_C_STANDARD 23)
-set(NPCAP_DIR ${PROJECT_SOURCE_DIR}/npcap)
-include_directories(${NPCAP_DIR}/Include src/inc)
-link_directories(${NPCAP_DIR}/Lib/x64)
-link_directories(${PROJECT_SOURCE_DIR}/lib/ncursesw)
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g")
+
+include_directories(${PROJECT_SOURCE_DIR}/src/inc)
 
 add_executable(nps_teach src/nps.c src/device.c src/sock2.c
         src/prtc/ethii.c
@@ -19,4 +19,4 @@ add_executable(nps_teach src/nps.c src/device.c src/sock2.c
         src/nps_view.c
         src/utils/tcputil.c)
 
-target_link_libraries(nps_teach ws2_32 Packet.lib wpcap.lib ncursesw)
+target_link_libraries(nps_teach ncurses pcap pthread)

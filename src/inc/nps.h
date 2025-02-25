@@ -1,13 +1,16 @@
-﻿//
-// Created by admin on 24-12-18.
-//
-
-#ifndef NPS_H
+﻿#ifndef NPS_H
 #define NPS_H
 
+typedef unsigned char u_char;
+typedef unsigned short u_short;
+typedef unsigned int u_int;
+
 #include <pcap.h>
+#include <stdbool.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include <stack.h>
-#include <winsock2.h>
 
 #define CMD_SIZE        64
 #define BUFFER_SIZE     128
@@ -81,8 +84,6 @@ void nps_view();
 
 void view_init();
 
-// utils
-
 uint32_t gen_uint32_number();
 
-#endif //NPS_H
+#endif

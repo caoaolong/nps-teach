@@ -1,13 +1,10 @@
-//
-// Created by Administrator on 24-12-24.
-//
 #include <prtc.h>
 #include <stdlib.h>
 #include <string.h>
 
 Arp_Hdr *arp_parse(const unsigned char *data) {
     Arp_Hdr *arp_hdr = malloc(sizeof(Arp_Hdr));
-    if (!arp_hdr) return nullptr;
+    if (!arp_hdr) return NULL;
     memcpy(arp_hdr, data, sizeof(Arp_Hdr));
     arp_hdr->h_type = ntohs(arp_hdr->h_type);
     arp_hdr->p_type = ntohs(arp_hdr->p_type);

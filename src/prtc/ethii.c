@@ -1,11 +1,7 @@
-//
-// Created by Administrator on 24-12-23.
-//
 #include <stdlib.h>
 #include <stdio.h>
 #include <prtc.h>
 #include <string.h>
-#include <winsock2.h>
 
 EthII_Hdr *eth_ii_parse(const unsigned char *data) {
     EthII_Hdr *eth_ii = malloc(sizeof(EthII_Hdr));
@@ -18,7 +14,7 @@ EthII_Hdr *eth_ii_parse(const unsigned char *data) {
 
 uint8_t *eth_ii_serialize(const EthII_Hdr *eth_ii_hdr) {
     uint8_t *data = malloc(sizeof(EthII_Hdr));
-    if (data == NULL) return nullptr;
+    if (data == NULL) return NULL;
 
     return data;
 }

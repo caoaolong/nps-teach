@@ -1,16 +1,11 @@
-//
-// Created by Administrator on 25-1-22.
-//
-
 #ifndef SOCK2_H
 #define SOCK2_H
 
 #include <prtc.h>
+#include <sys/socket.h>
 
-// limits
 #define MAX_FDS         1024
 
-// states
 typedef enum {
     CLOSED,
     LISTEN,
@@ -32,8 +27,8 @@ typedef struct {
     uint16_t sid;
     TcpState state;
     union {
-        struct sockaddr;
-        struct sockaddr_in;
+        struct sockaddr s;
+        struct sockaddr_in si;
     } addr;
 
     int backlog;
@@ -53,4 +48,4 @@ int recv2(int sockfd, void *buf, size_t len, int flags);
 
 int close2(int sockfd);
 
-#endif //SOCK2_H
+#endif

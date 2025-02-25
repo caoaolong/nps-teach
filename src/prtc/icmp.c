@@ -1,22 +1,19 @@
-//
-// Created by Administrator on 25-1-2.
-//
 #include <prtc.h>
 
 Icmp_Hdr *icmp_parse(const unsigned char *data, uint16_t len) {
     Icmp_Hdr *icmp_hdr = malloc(len);
-    if (icmp_hdr == NULL) return nullptr;
+    if (icmp_hdr == NULL) return NULL;
     memcpy(icmp_hdr, data, len);
-    // if (!icmp_checksum(icmp_hdr, len)) return nullptr;
+    /* if (!icmp_checksum(icmp_hdr, len)) return NULL; */
     return icmp_hdr;
 }
 
-BOOL icmp_checksum(Icmp_Hdr *icmp_hdr, uint16_t len) {
+bool icmp_checksum(Icmp_Hdr *icmp_hdr, uint16_t len) {
     if (checksum(icmp_hdr, len) !=0) {
         free(icmp_hdr);
-        return FALSE;
+        return false;
     }
-    return TRUE;
+    return true;
 }
 
 void icmp_print(const Icmp_Hdr *icmp_hdr) {
